@@ -73,7 +73,7 @@ const LoginPage = ({ onLogin }) => {
         <div className="text-right -mt-1">
           <button 
             onClick={() => navigate('/forgot-password')} 
-            className="text-orange-500 hover:text-orange-600 text-sm font-semibold"
+            className="text-orange-500 hover:text-orange-600 text-sm"
           >
             Lupa Password?
           </button>

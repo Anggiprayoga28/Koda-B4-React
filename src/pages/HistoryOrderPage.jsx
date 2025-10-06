@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Calendar, ShoppingBag, DollarSign, Package, ChevronRight, MessageCircle } from 'lucide-react';
+import { Calendar, Package, MessageCircle } from 'lucide-react';
 import Notification from '../components/ui/Notification';
+import Pagination from '../components/admin/Pagination';
 
 const HistoryOrderPage = () => {
   const navigate = useNavigate();
@@ -14,6 +15,8 @@ const HistoryOrderPage = () => {
   const [orders, setOrders] = useState([]);
   const [message, setMessage] = useState('');
   const [notification, setNotification] = useState(null);
+  
+  const itemsPerPage = 4;
 
   useEffect(() => {
     const savedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
@@ -62,6 +65,8 @@ const HistoryOrderPage = () => {
     return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   };
 
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Helmet>
@@ -81,10 +86,10 @@ const HistoryOrderPage = () => {
           </span>
         </div>
 
-        <div className="flex gap-8">
-          <div className="flex-1">
+        <div className="grid grid-cols-[1fr_400px] gap-8">
+          <div>
             <div className="flex items-center gap-4 mb-8">
-              <div className="flex bg-white rounded-lg shadow-sm overflow-hidden">
+              <div className="flex bg-[#E8E8E84D] p-2 shadow-sm overflow-hidden">
                 <button
                   onClick={() => setActiveTab('on-progress')}
                   className={`px-6 py-3 font-medium transition ${
@@ -121,7 +126,7 @@ const HistoryOrderPage = () => {
                 <select 
                   value={selectedMonth}
                   onChange={(e) => setSelectedMonth(e.target.value)}
-                  className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-3 pr-10 font-medium cursor-pointer hover:border-gray-400 transition"
+                  className="appearance-none bg-[#F1F1F1] border border-gray-300 px-4 py-3 pr-10 font-medium cursor-pointer hover:border-gray-400 transition"
                 >
                   <option>January 2023</option>
                   <option>February 2023</option>
@@ -143,10 +148,10 @@ const HistoryOrderPage = () => {
               <>
                 <div className="space-y-4">
                   {filteredOrders.map((order) => (
-                    <div key={order.orderId} className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition">
+                    <div key={order.orderId} className="bg-[#E8E8E84D] p-6 hover:shadow-md transition">
                       <div className="flex items-center gap-6">
                         <img 
-                          src={order.items[0]?.image || 'https://images.unsplash.com/photo-1517487881594-2787fef5ebf7?w=150&h=150&fit=crop'} 
+                          src={order.items[0]?.image || ''} 
                           alt="Order" 
                           className="w-24 h-24 object-cover rounded-lg"
                         />
@@ -154,7 +159,7 @@ const HistoryOrderPage = () => {
                         <div className="flex-1 grid grid-cols-4 gap-8">
                           <div>
                             <div className="flex items-center gap-2 text-gray-500 text-sm mb-1">
-                              <ShoppingBag className="w-4 h-4" />
+                              <img src='/public/icons/glass.svg' className="w-4 h-4" />
                               <span>No. Order</span>
                             </div>
                             <div className="font-semibold">#{order.orderId}</div>
@@ -168,7 +173,7 @@ const HistoryOrderPage = () => {
 
                           <div>
                             <div className="flex items-center gap-2 text-gray-500 text-sm mb-1">
-                              <Calendar className="w-4 h-4" />
+                              <img src='/public/icons/Calendar.svg' className="w-4 h-4" />
                               <span>Date</span>
                             </div>
                             <div className="font-semibold">{formatDate(order.orderDate)}</div>
@@ -176,7 +181,7 @@ const HistoryOrderPage = () => {
 
                           <div>
                             <div className="flex items-center gap-2 text-gray-500 text-sm mb-1">
-                              <DollarSign className="w-4 h-4" />
+                              <img src='/public/icons/Repeat.svg' className="w-4 h-4" />
                               <span>Total</span>
                             </div>
                             <div className="font-semibold">Idr {Math.round(order.total).toLocaleString()}</div>
@@ -184,7 +189,7 @@ const HistoryOrderPage = () => {
 
                           <div>
                             <div className="flex items-center gap-2 text-gray-500 text-sm mb-1">
-                              <Package className="w-4 h-4" />
+                              <img src='/public/icons/u_process.svg' className="w-4 h-4" />
                               <span>Status</span>
                             </div>
                             <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
@@ -201,70 +206,32 @@ const HistoryOrderPage = () => {
                   ))}
                 </div>
 
-                <div className="flex items-center justify-center gap-2 mt-8">
-                  <button 
-                    onClick={() => setCurrentPage(1)}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition ${
-                      currentPage === 1 
-                        ? 'bg-orange-500 text-white' 
-                        : 'bg-white text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    1
-                  </button>
-                  <button 
-                    onClick={() => setCurrentPage(2)}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition ${
-                      currentPage === 2 
-                        ? 'bg-orange-500 text-white' 
-                        : 'bg-white text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    2
-                  </button>
-                  <button 
-                    onClick={() => setCurrentPage(3)}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition ${
-                      currentPage === 3 
-                        ? 'bg-orange-500 text-white' 
-                        : 'bg-white text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    3
-                  </button>
-                  <button 
-                    onClick={() => setCurrentPage(4)}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition ${
-                      currentPage === 4 
-                        ? 'bg-orange-500 text-white' 
-                        : 'bg-white text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    4
-                  </button>
-                  <button className="w-10 h-10 rounded-full bg-orange-500 text-white flex items-center justify-center hover:bg-orange-600 transition">
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                </div>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                  itemsPerPage={itemsPerPage}
+                  totalItems={filteredOrders.length}
+                />
               </>
             )}
           </div>
 
-          <div className="w-96">
-            <div className="bg-white rounded-lg shadow-sm p-6 sticky top-4">
-              <div className="flex items-center justify-center w-16 h-16 bg-orange-500 rounded-full mx-auto mb-4">
+          <div>
+            <div className="bg-white shadow-sm p-6 sticky top-4">
+              <div className="flex items-center justify-center w-16 h-16 bg-black rounded-3xl mb-4">
                 <MessageCircle className="w-8 h-8 text-white" />
               </div>
               
-              <h3 className="text-xl font-semibold text-center mb-3">Send Us Message</h3>
+              <h3 className="text-xl font-semibold text-[#4F5665] mb-3">Send Us Message</h3>
               
-              <p className="text-gray-600 text-sm text-center mb-6">
+              <p className="text-gray-600 text-sm mb-6">
                 if your unable to find answer or find your product quickly, please describe your problem and tell us. we will give you solution.
               </p>
 
               <button 
                 onClick={() => setShowMessage(!showMessage)}
-                className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition"
+                className="w-full bg-[#FF8906] text-[#0B132A] py-3 rounded-lg hover:bg-orange-600 transition"
               >
                 {showMessage ? 'Hide Message Form' : 'Send Message'}
               </button>

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { User, MapPin, Phone, CreditCard, Truck, CheckCircle, ArrowLeft } from 'lucide-react';
 
 const OrderDetailPage = () => {
   const { orderId } = useParams();
@@ -53,16 +52,8 @@ const OrderDetailPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-scree">
       <div className="max-w-7xl mx-auto px-8 py-12">
-        <button 
-          onClick={handleBack}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          Back to History Order
-        </button>
-
         <h1 className="text-4xl font-bold mb-2">Order #{order.orderId}</h1>
         <p className="text-gray-600 mb-8">{formatDate(order.orderDate)}</p>
 
@@ -71,55 +62,55 @@ const OrderDetailPage = () => {
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-2xl font-semibold mb-6">Order Information</h2>
               
-              <div className="space-y-4">
-                <div className="flex items-start gap-4 py-3 border-b">
-                  <User className="w-5 h-5 text-gray-400 mt-1" />
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-500 mb-1">Full Name</p>
-                    <p className="font-semibold">{order.customerInfo.fullName}</p>
+              <div className="space-y-0">
+                <div className="flex items-center justify-between py-4 border-b border-gray-200">
+                  <div className="flex items-center gap-3 text-gray-600">
+                    <img src='/public/icons/Profile.svg' className="w-5 h-5" />
+                    <span>Full Name</span>
                   </div>
+                  <p className="font-semibold text-gray-900">{order.customerInfo.fullName}</p>
                 </div>
 
-                <div className="flex items-start gap-4 py-3 border-b">
-                  <MapPin className="w-5 h-5 text-gray-400 mt-1" />
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-500 mb-1">Address</p>
-                    <p className="font-semibold">{order.customerInfo.address}</p>
+                <div className="flex items-center justify-between py-4 border-b border-gray-200">
+                  <div className="flex items-center gap-3 text-gray-600">
+                    <img src='/public/icons/Location.svg' className="w-5 h-5" />
+                    <span>Address</span>
                   </div>
+                  <p className="font-semibold text-gray-900">{order.customerInfo.address}</p>
                 </div>
 
-                <div className="flex items-start gap-4 py-3 border-b">
-                  <Phone className="w-5 h-5 text-gray-400 mt-1" />
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-500 mb-1">Phone</p>
-                    <p className="font-semibold">082116304338</p>
+                <div className="flex items-center justify-between py-4 border-b border-gray-200">
+                  <div className="flex items-center gap-3 text-gray-600">
+                    <img src='/public/icons/PhoneCall.svg' className="w-5 h-5" />
+                    <span>Phone</span>
                   </div>
+                  <p className="font-semibold text-gray-900">082116304338</p>
                 </div>
 
-                <div className="flex items-start gap-4 py-3 border-b">
-                  <CreditCard className="w-5 h-5 text-gray-400 mt-1" />
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-500 mb-1">Payment Method</p>
-                    <p className="font-semibold">Cash</p>
+                <div className="flex items-center justify-between py-4 border-b border-gray-200">
+                  <div className="flex items-center gap-3 text-gray-600">
+                    <img src='/public/icons/u_postcard.svg' className="w-5 h-5" />
+                    <span>Payment Method</span>
                   </div>
+                  <p className="font-semibold text-gray-900">Cash</p>
                 </div>
 
-                <div className="flex items-start gap-4 py-3 border-b">
-                  <Truck className="w-5 h-5 text-gray-400 mt-1" />
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-500 mb-1">Shipping</p>
-                    <p className="font-semibold">{order.customerInfo.delivery}</p>
+                <div className="flex items-center justify-between py-4 border-b border-gray-200">
+                  <div className="flex items-center gap-3 text-gray-600">
+                    <img src='/public/icons/truck.svg' className="w-5 h-5" />
+                    <span>Shipping</span>
                   </div>
+                  <p className="font-semibold text-gray-900">{order.customerInfo.delivery}</p>
                 </div>
 
-                <div className="flex items-start gap-4 py-3">
-                  <CheckCircle className="w-5 h-5 text-gray-400 mt-1" />
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-500 mb-1">Status</p>
-                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
-                      {order.status}
-                    </span>
+                <div className="flex items-center justify-between py-4">
+                  <div className="flex items-center gap-3 text-gray-600">
+                    <img src='/public/icons/u_process.svg' className="w-5 h-5" />
+                    <span>Status</span>
                   </div>
+                  <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
+                    {order.status}
+                  </span>
                 </div>
               </div>
 
@@ -133,12 +124,12 @@ const OrderDetailPage = () => {
           </div>
 
           <div>
-            <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="">
               <h2 className="text-xl font-semibold mb-4">Your Order</h2>
               
               <div className="space-y-4">
                 {order.items.map((item, index) => (
-                  <div key={index} className="bg-gray-50 rounded-lg p-4">
+                  <div key={index} className="bg-[#E8E8E84D] p-4">
                     <div className="flex gap-3">
                       <img 
                         src={item.image} 
@@ -151,15 +142,15 @@ const OrderDetailPage = () => {
                             FLASH SALE!
                           </span>
                         )}
-                        <h3 className="font-semibold text-sm mb-1">{item.name}</h3>
-                        <p className="text-xs text-gray-600 mb-2">
+                        <h3 className="text-sm mb-1">{item.name}</h3>
+                        <p className="text-xs text-[#4F5665] mb-2">
                           {item.quantity}pcs | {item.size} | {item.temp} | {order.customerInfo.delivery}
                         </p>
                         <div className="flex items-center gap-2">
-                          <span className="text-gray-400 line-through text-xs">
+                          <span className="text-red-600 line-through text-xs">
                             IDR {item.originalPrice.toLocaleString()}
                           </span>
-                          <span className="text-orange-500 font-bold text-sm">
+                          <span className="text-[#FF8906] text-sm">
                             IDR {item.price.toLocaleString()}
                           </span>
                         </div>

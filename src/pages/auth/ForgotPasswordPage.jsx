@@ -54,14 +54,6 @@ const ForgotPasswordPage = ({ onForgotPassword }) => {
           <Button onClick={handleSubmit} variant="primary">Submit</Button>
         </div>
       </div>
-      <div className="mt-8 text-center">
-        <button 
-          onClick={() => navigate('/login')} 
-          className="text-orange-500 hover:text-orange-600 font-semibold"
-        >
-          Back to Login
-        </button>
-      </div>
     </AuthLayout>
   );
 };

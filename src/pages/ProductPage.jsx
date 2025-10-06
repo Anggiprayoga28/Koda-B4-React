@@ -1,12 +1,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { ChevronLeft, ChevronRight, X, Mail, User, MapPin } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Mail, User, MapPin } from 'lucide-react';
 import { products } from '../data/products';
 import { promos } from '../data/promos';
 import MenuCard from '../components/landing/MenuCard';
 import Pagination from '../components/admin/Pagination';
 import Notification from '../components/ui/Notification';
+
 
 const ProductPage = () => {
   const navigate = useNavigate();
@@ -201,7 +202,7 @@ const ProductPage = () => {
         )}
 
         <div className="max-w-7xl mx-auto px-8 py-12">
-          <h1 className="text-4xl font-bold mb-8">Payment Details</h1>
+          <h1 className="text-4xl  mb-8">Payment Details</h1>
           
           <div className="grid grid-cols-3 gap-8">
             <div className="col-span-2">
@@ -209,7 +210,7 @@ const ProductPage = () => {
                 <h2 className="text-2xl font-semibold">Your Order</h2>
                 <button 
                   onClick={handleBackToProduct}
-                  className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 flex items-center gap-2"
+                  className="bg-[#FF8906] text-[#0B132A] px-6 py-2 rounded-lg hover:bg-orange-600 flex items-center gap-2"
                 >
                   + Add Menu
                 </button>
@@ -227,24 +228,24 @@ const ProductPage = () => {
                 </div>
               ) : (
                 cart.map((item) => (
-                  <div key={item.cartId} className="bg-white rounded-lg p-4 mb-4 flex items-center gap-4">
-                    <img src={item.image} alt={item.name} className="w-32 h-32 object-cover rounded-lg" />
+                  <div key={item.cartId} className="bg-[#E8E8E84D] p-4 mb-4 flex items-center gap-4">
+                    <img src={item.image} alt={item.name} className="w-32 h-32 object-cover" />
                     <div className="flex-1">
                       {item.isFlashSale && (
-                        <span className="bg-red-600 text-white px-3 py-1 text-xs font-bold rounded inline-block mb-2">FLASH SALE!</span>
+                        <span className="bg-red-600 text-white px-3 py-1 text-xs rounded inline-block mb-2">FLASH SALE!</span>
                       )}
-                      <h3 className="font-bold text-lg mb-1">{item.name}</h3>
+                      <h3 className=" font-bold text-lg mb-1">{item.name}</h3>
                       <p className="text-gray-600 text-sm mb-2">{item.quantity}pcs | {item.size} | {item.temp} | {customerInfo.delivery}</p>
                       <div className="flex items-center gap-3">
-                        <span className="text-gray-400 line-through text-sm">IDR {item.originalPrice.toLocaleString()}</span>
-                        <span className="text-orange-500 font-bold text-xl">IDR {item.price.toLocaleString()}</span>
+                        <span className="text-red-600 line-through text-sm">IDR {item.originalPrice.toLocaleString()}</span>
+                        <span className="text-[#FF8906] text-xl">IDR {item.price.toLocaleString()}</span>
                       </div>
                     </div>
                     <button 
                       onClick={() => removeFromCart(item.cartId)}
                       className="text-red-500 hover:text-red-700 w-8 h-8 flex items-center justify-center"
                     >
-                      <X className="w-6 h-6" />
+                      <img src="/public/icons/XCircle.svg" alt="X" />
                     </button>
                   </div>
                 ))
@@ -305,7 +306,7 @@ const ProductPage = () => {
                           onClick={() => setCustomerInfo({...customerInfo, delivery: method})}
                           className={`border-2 px-4 py-3 rounded-lg font-medium ${
                             customerInfo.delivery === method 
-                              ? 'border-orange-500 bg-orange-50 text-orange-500'
+                              ? 'border-[#FF8906] bg-white text-[#0B0909]'
                               : 'border-gray-300 hover:border-gray-400'
                           }`}
                         >
@@ -319,7 +320,7 @@ const ProductPage = () => {
             </div>
 
             <div>
-              <div className="bg-white rounded-lg p-6 sticky top-4">
+              <div className="bg-[#E8E8E84D] p-6 sticky top-4">
                 <h3 className="text-xl font-semibold mb-6">Total</h3>
                 
                 <div className="space-y-3 mb-6">
@@ -337,13 +338,13 @@ const ProductPage = () => {
                   </div>
                   <div className="border-t pt-3 flex justify-between">
                     <span className="font-semibold">Sub Total</span>
-                    <span className="font-bold text-lg">Idr. {Math.round(totals.subTotal).toLocaleString()}</span>
+                    <span className=" text-lg">Idr. {Math.round(totals.subTotal).toLocaleString()}</span>
                   </div>
                 </div>
 
                 <button 
                   onClick={handleCheckout}
-                  className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition mb-6"
+                  className="w-full bg-[#FF8906] text-[#0B0909] py-3 rounded-lg hover:bg-orange-600 transition mb-6"
                 >
                   Checkout
                 </button>
@@ -405,7 +406,7 @@ const ProductPage = () => {
 
       <div className="relative h-96 flex items-center justify-start px-16" style={{ backgroundImage: 'url(/public/cover-product.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-        <h1 className="relative text-white text-5xl font-bold max-w-xl leading-tight">We Provide Good Coffee and Healthy Meals</h1>
+        <h1 className="relative text-white text-5xl  max-w-xl leading-tight">We Provide Good Coffee and Healthy Meals</h1>
       </div>
 
       <div className="w-full bg-white py-12">
@@ -427,16 +428,16 @@ const ProductPage = () => {
                 <img src='/public/mother.svg' className="w-full" alt="promo" />
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-sm mb-1.5 leading-tight">{promo.title}</h3>
+                <h3 className=" text-sm mb-1.5 leading-tight">{promo.title}</h3>
                 <p className="text-xs mb-2.5 leading-snug">{promo.description}</p>
-                <button className="text-xs font-semibold bg-white px-3.5 py-1.5 rounded-md hover:bg-gray-50 transition">{promo.code}</button>
+                <button className="text-xs text-white">{promo.code}</button>
               </div>
             </div>
           ))}
           {promos.slice(promoIndex + 3, promoIndex + 4).map((promo, idx) => (
             <div key={idx} className={`${promo.bgColor} rounded-2xl p-6 flex items-center gap-4`}>
               <div className="flex-1">
-                <h3 className="font-bold text-sm mb-1.5 leading-tight">{promo.title}</h3>
+                <h3 className=" text-sm mb-1.5 leading-tight">{promo.title}</h3>
                 <p className="text-xs leading-snug">{promo.description}</p>
               </div>
               <div className="w-16 h-16 flex items-center justify-center flex-shrink-0">

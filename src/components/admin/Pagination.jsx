@@ -42,9 +42,9 @@ const Pagination = ({
           <button
             key={pageNum}
             onClick={() => onPageChange(pageNum)}
-            className={`w-12 h-12 rounded-full text-sm font-semibold transition-all ${
+            className={`w-12 h-12 rounded-full text-sm transition-all ${
               currentPage === pageNum
-                ? 'bg-orange-500 text-white shadow-lg'
+                ? 'bg-[#FF8906] hover:bg-orange-600 text-[#0B0909]'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
