@@ -1,0 +1,30 @@
+export const promos = [
+  {
+    id: 1,
+    title: "HAPPY MOTHER'S DAY!",
+    description: "Get one of our favorite menu for free!",
+    code: "Klaim Kupon",
+    bgColor: 'bg-[#88B788]'
+  },
+  {
+    id: 2,
+    title: "WEEKEND SPECIAL!",
+    description: "50% off on all coffee drinks!",
+    code: "Klaim Kupon",
+    bgColor: 'bg-[#88B788]'
+  },
+  {
+    id: 3,
+    title: "BUY 1 GET 1 FREE",
+    description: "On selected items this week only!",
+    code: "Klaim Kupon",
+    bgColor: 'bg-[#88B788]'
+  },
+  {
+    id: 4,
+    title: "Get a cup of coffee for free",
+    description: "on sunday morning only on may 6!",
+    bgColor: 'bg-[#F5C361]',
+    hasImage: true
+  }
+];
