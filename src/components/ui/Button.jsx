@@ -1,0 +1,21 @@
+import React from 'react';
+
+const Button = ({ children, onClick, variant = 'primary', type = 'button', fullWidth = true, className = '' }) => {
+  const baseStyle = "py-4 rounded-xl font-semibold transition-all shadow-sm text-base";
+  const widthStyle = fullWidth ? "w-full" : "";
+  
+  const variants = {
+    primary: "bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700",
+    secondary: "bg-gray-200 text-gray-700 hover:bg-gray-300",
+    danger: "bg-red-500 text-white hover:bg-red-600",
+    link: "text-orange-500 hover:text-orange-600 font-medium"
+  };
+
+  return (
+    <button type={type} onClick={onClick} className={`${baseStyle} ${widthStyle} ${variants[variant]} ${className}`}>
+      {children}
+    </button>
+  );
+};
+
+export default Button;
