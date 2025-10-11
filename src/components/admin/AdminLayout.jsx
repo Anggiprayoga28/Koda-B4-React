@@ -56,9 +56,9 @@ const AdminLayout = ({ children, title }) => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+                className={`flex items-center gap-3 px-4 py-2 rounded-lg transition ${
                   isActive
-                    ? 'bg-orange-500 text-white'
+                    ? 'bg-[#FF8906] text-[#0B132A]'
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
