@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
-import { User, Mail, Phone, MapPin, Lock, Eye, EyeOff, Camera } from 'lucide-react';
+import { Eye, EyeOff, Camera } from 'lucide-react';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -22,6 +21,10 @@ const ProfilePage = () => {
     new: '',
     confirm: ''
   });
+
+  useEffect(() => {
+    document.title = `My Profile - ${profileData.fullName || 'User'} | Coffee Shop`;
+  }, [profileData.fullName]);
 
   useEffect(() => {
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -125,11 +128,6 @@ const ProfilePage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
-      <Helmet>
-        <title>My Profile - {profileData.fullName || 'User'} | Coffee Shop</title>
-        <meta name="description" content="Manage your coffee shop account profile and settings" />
-      </Helmet>
-
       <div className="max-w-6xl mx-auto px-8">
         <h1 className="text-5xl font-light mb-12">Profile</h1>
 
@@ -145,11 +143,11 @@ const ProfilePage = () => {
                     <img src={profileData.photoUrl} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gray-300">
-                      <User className="w-20 h-20 text-gray-500" />
+                      <img src='/public/icons/Profile.svg' className="w-20 h-20 text-gray-500" />
                     </div>
                   )}
                 </div>
-                <label className="absolute bottom-0 right-0 bg-orange-500 text-white p-2 rounded-full cursor-pointer hover:bg-orange-600 transition">
+                <label className="absolute bottom-0 right-0 bg-[#FF8906] text-[#4F5665] p-2 rounded-full cursor-pointer hover:bg-orange-600 transition">
                   <Camera className="w-5 h-5" />
                   <input 
                     type="file" 
@@ -162,12 +160,12 @@ const ProfilePage = () => {
 
               <button 
                 onClick={() => document.querySelector('input[type="file"]').click()}
-                className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition mb-4"
+                className="w-full bg-[#FF8906] text-black py-3 rounded-lg hover:bg-orange-600 transition mb-4"
               >
                 Upload New Photo
               </button>
 
-              <p className="text-sm text-gray-500">
+              <p className="text-lg text-gray-500">
                 Since {formatDate(profileData.createdAt)}
               </p>
             </div>
@@ -177,7 +175,7 @@ const ProfilePage = () => {
             <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm p-8">
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Full Name</label>
+                  <label className="block text-lg font-medium mb-2">Full Name</label>
                   <div className="relative">
                     <input 
                       type="text"
@@ -186,12 +184,12 @@ const ProfilePage = () => {
                       disabled={!isEditing}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10 disabled:bg-gray-50 disabled:text-gray-600"
                     />
-                    <User className="w-5 h-5 absolute left-3 top-4 text-gray-400" />
+                    <img src='/public/icons/Profile.svg' className="w-5 h-5 absolute left-3 top-4 text-gray-400" />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Email</label>
+                  <label className="block text-lg font-medium mb-2">Email</label>
                   <div className="relative">
                     <input 
                       type="email"
@@ -199,12 +197,12 @@ const ProfilePage = () => {
                       disabled
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10 bg-gray-50 text-gray-600"
                     />
-                    <Mail className="w-5 h-5 absolute left-3 top-4 text-gray-400" />
+                    <img src='/public/icons/mail.svg' className="w-5 h-5 absolute left-3 top-4 text-gray-400" />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Phone</label>
+                  <label className="block text-lg font-medium mb-2">Phone</label>
                   <div className="relative">
                     <input 
                       type="tel"
@@ -213,17 +211,17 @@ const ProfilePage = () => {
                       disabled={!isEditing}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10 disabled:bg-gray-50 disabled:text-gray-600"
                     />
-                    <Phone className="w-5 h-5 absolute left-3 top-4 text-gray-400" />
+                    <img src='/public/icons/PhoneCall.svg' className="w-5 h-5 absolute left-3 top-4 text-gray-400" />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium">Password</label>
+                    <label className="block text-lg font-medium">Password</label>
                     <button 
                       type="button"
                       onClick={() => setShowPasswordModal(true)}
-                      className="text-orange-500 text-sm font-medium hover:underline"
+                      className="text-orange-500 text-lg hover:underline"
                     >
                       Set New Password
                     </button>
@@ -235,7 +233,7 @@ const ProfilePage = () => {
                       disabled
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10 pr-10 bg-gray-50 text-gray-600"
                     />
-                    <Lock className="w-5 h-5 absolute left-3 top-4 text-gray-400" />
+                    <img src='/public/icons/Password.svg' className="w-5 h-5 absolute left-3 top-4 text-gray-400" />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
@@ -247,7 +245,7 @@ const ProfilePage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Address</label>
+                  <label className="block text-lg font-medium mb-2">Address</label>
                   <div className="relative">
                     <input 
                       type="text"
@@ -256,7 +254,7 @@ const ProfilePage = () => {
                       disabled={!isEditing}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10 disabled:bg-gray-50 disabled:text-gray-600"
                     />
-                    <MapPin className="w-5 h-5 absolute left-3 top-4 text-gray-400" />
+                    <img src='/public/icons/Location.svg' className="w-5 h-5 absolute left-3 top-4 text-gray-400" />
                   </div>
                 </div>
               </div>
@@ -266,7 +264,7 @@ const ProfilePage = () => {
                   <>
                     <button 
                       type="submit"
-                      className="flex-1 bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition"
+                      className="flex-1 bg-[#FF8906] text-black py-3 rounded-lg font-semibold hover:bg-orange-600 transition"
                     >
                       Submit
                     </button>
@@ -282,9 +280,9 @@ const ProfilePage = () => {
                   <button 
                     type="button"
                     onClick={() => setIsEditing(true)}
-                    className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition"
+                    className="w-full bg-[#FF8906] text-black py-3 rounded-lg hover:bg-orange-600 transition"
                   >
-                    Edit Profile
+                    Submit
                   </button>
                 )}
               </div>
@@ -300,7 +298,7 @@ const ProfilePage = () => {
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Current Password</label>
+                <label className="block text-lg font-medium mb-2">Current Password</label>
                 <input 
                   type="password"
                   value={newPassword.current}
@@ -311,7 +309,7 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">New Password</label>
+                <label className="block text-lg font-medium mb-2">New Password</label>
                 <input 
                   type="password"
                   value={newPassword.new}
@@ -322,7 +320,7 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Confirm New Password</label>
+                <label className="block text-lg font-medium mb-2">Confirm New Password</label>
                 <input 
                   type="password"
                   value={newPassword.confirm}

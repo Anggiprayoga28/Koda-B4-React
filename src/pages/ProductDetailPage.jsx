@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
-import { ArrowLeft, Minus, Plus, ShoppingCart, Star } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, Star } from 'lucide-react';
 import { products } from '../data/products';
 import MenuCard from '../components/landing/MenuCard';
 import Pagination from '../components/admin/Pagination';
@@ -17,12 +16,16 @@ const ProductDetailPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 3;
 
+  const product = products.find(p => p.id === parseInt(id)) || products[0];
+
+  useEffect(() => {
+    document.title = `${product.name} - Coffee Shop`;
+  }, [product.name]);
+
   useEffect(() => {
     setCurrentPage(1);
     window.scrollTo(0, 0);
   }, [id]);
-
-  const product = products.find(p => p.id === parseInt(id)) || products[0];
   
   const productImages = [
     product.image,
@@ -80,11 +83,6 @@ const ProductDetailPage = () => {
 
   return (
     <div className="min-h-screen">
-      <Helmet>
-        <title>{product.name} - Coffee Shop</title>
-        <meta name="description" content={product.description} />
-      </Helmet>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="overflow-hidden mb-12">
           <div className="grid md:grid-cols-2 gap-8 p-6 lg:p-10">
@@ -111,7 +109,7 @@ const ProductDetailPage = () => {
                     <img
                       src={img}
                       alt={`${product.name} ${index + 1}`}
-                      className="w-full h-20 object-cover"
+                      className="w-full h-40 object-cover"
                     />
                   </button>
                 ))}
@@ -120,12 +118,12 @@ const ProductDetailPage = () => {
 
             <div>
               {product.isFlashSale && (
-                <span className="inline-block bg-red-600 text-white px-3 py-1 text-xs font-semibold rounded-full mb-2">
+                <span className="inline-block bg-red-600 text-white px-3 py-1 text-xs rounded-full mb-2">
                   FLASH SALE!
                 </span>
               )}
               
-              <h1 className="text-3xl lg:text-4xl font-semibold text-gray-900 mb-3">
+              <h1 className="text-3xl lg:text-4xl text-gray-900 mb-3">
                 {product.name}
               </h1>
 
@@ -133,7 +131,7 @@ const ProductDetailPage = () => {
                 <span className="text-sm text-red-600 line-through">
                   IDR {product.originalPrice.toLocaleString()}
                 </span>
-                <span className="text-2xl font-semibold text-orange-500">
+                <span className="text-2xl text-orange-500">
                   IDR {product.price.toLocaleString()}
                 </span>
               </div>
@@ -226,7 +224,7 @@ const ProductDetailPage = () => {
               <div className="grid grid-cols-2 gap-2">
                 <button 
                   onClick={handleBuyNow}
-                  className="flex-1 bg-[#FF8906] hover:bg-orange-600 text-white py-2.5 font-medium transition-colors"
+                  className="flex-1 bg-[#FF8906] hover:bg-orange-600 text-black py-2.5 font-medium transition-colors"
                 >
                   Buy
                 </button>

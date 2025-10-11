@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { FileText, Edit, Trash2 } from 'lucide-react';
 import AdminLayout from '../components/admin/AdminLayout';
 import SearchFilter from '../components/admin/SearchFilter';
@@ -21,6 +20,10 @@ const OrderListPage = () => {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const itemsPerPage = 5;
+
+  useEffect(() => {
+    document.title = 'Order List - Admin Panel | Coffee Shop';
+  }, []);
 
   useEffect(() => {
     const savedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
@@ -160,11 +163,6 @@ const OrderListPage = () => {
 
   return (
     <AdminLayout title="Order List">
-      <Helmet>
-        <title>Order List - Admin Panel | Coffee Shop</title>
-        <meta name="description" content="Manage all coffee shop orders - view, edit, and track order status" />
-      </Helmet>
-
       <SearchFilter
         searchTerm={searchTerm}
         onSearchChange={(value) => {

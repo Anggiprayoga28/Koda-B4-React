@@ -7,13 +7,17 @@ const OrderDetailPage = () => {
   const [order, setOrder] = useState(null);
 
   useEffect(() => {
+    document.title = `Order #${orderId} - Coffee Shop`;
+  }, [orderId]);
+
+  useEffect(() => {
     const orders = JSON.parse(localStorage.getItem('orders') || '[]');
     const foundOrder = orders.find(o => o.orderId === orderId);
     setOrder(foundOrder);
   }, [orderId]);
 
   const handleBack = () => {
-    navigate('/order-history'); 
+    navigate('/history-order'); 
   };
 
   if (!order) {
@@ -52,7 +56,7 @@ const OrderDetailPage = () => {
   };
 
   return (
-    <div className="min-h-scree">
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-8 py-12">
         <h1 className="text-4xl font-bold mb-2">Order #{order.orderId}</h1>
         <p className="text-gray-600 mb-8">{formatDate(order.orderDate)}</p>
@@ -114,7 +118,7 @@ const OrderDetailPage = () => {
                 </div>
               </div>
 
-              <div className="mt-6 pt-6 border-t">
+              <div className="grid grid-cols-2 mt-6 pt-6 border-t">
                 <p className="text-lg font-semibold text-gray-700">Total Transaksi</p>
                 <p className="text-2xl font-bold text-orange-500 mt-1">
                   Idr {Math.round(order.total).toLocaleString()}

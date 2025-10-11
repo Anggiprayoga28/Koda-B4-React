@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet-async';
-import { ShoppingBag, Package, CheckCircle } from 'lucide-react';
 import AdminLayout from '../components/admin/AdminLayout';
 
 const DashboardPage = () => {
@@ -11,6 +9,10 @@ const DashboardPage = () => {
   });
   const [topProducts, setTopProducts] = useState([]);
   const [dateRange, setDateRange] = useState('16 - 23 January 2023');
+
+  useEffect(() => {
+    document.title = 'Dashboard - Coffee Shop Admin';
+  }, []);
 
   useEffect(() => {
     const loadDashboardData = () => {
@@ -86,15 +88,11 @@ const DashboardPage = () => {
 
   return (
     <AdminLayout>
-      <Helmet>
-        <title>Dashboard - Coffee Shop Admin</title>
-      </Helmet>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-gradient-to-br from-green-400 to-green-500 rounded-2xl p-6 text-white shadow-lg">
+        <div className="bg-[#6FC276] rounded-lg p-6 text-white">
           <div className="flex items-start justify-between mb-4">
-            <div className="bg-white/20 p-3 rounded-xl">
-              <ShoppingBag className="w-6 h-6" />
+            <div className="bg-white p-3 rounded-full">
+              <img src='/public/icons/glass-orange.svg' className="w-6 h-6" />
             </div>
           </div>
           <div className="mb-2">
@@ -106,10 +104,10 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-indigo-400 to-indigo-500 rounded-2xl p-6 text-white shadow-lg">
+        <div className="bg-[#6C69D4] rounded-lg p-6 text-white">
           <div className="flex items-start justify-between mb-4">
-            <div className="bg-white/20 p-3 rounded-xl">
-              <Package className="w-6 h-6" />
+            <div className="bg-white p-3 rounded-full">
+              <img src='/public/icons/truck-orange.svg' className="w-6 h-6" />
             </div>
           </div>
           <div className="mb-2">
@@ -121,10 +119,10 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-400 to-purple-500 rounded-2xl p-6 text-white shadow-lg">
+        <div className="bg-[#C56FBC] rounded-lg p-6 text-white shadow-lg">
           <div className="flex items-start justify-between mb-4">
-            <div className="bg-white/20 p-3 rounded-xl">
-              <CheckCircle className="w-6 h-6" />
+            <div className="bg-white p-3 rounded-full">
+              <img src='/public/icons/user-check.svg' className="w-6 h-6" />
             </div>
           </div>
           <div className="mb-2">

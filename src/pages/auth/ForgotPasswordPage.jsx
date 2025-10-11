@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail } from 'lucide-react';
 import AuthLayout from '../../components/layout/AuthLayout';
@@ -11,6 +11,10 @@ const ForgotPasswordPage = ({ onForgotPassword }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    document.title = 'Forgot Password - Coffee Shop';
+  }, []);
 
   const handleChange = (e) => {
     setEmail(e.target.value);

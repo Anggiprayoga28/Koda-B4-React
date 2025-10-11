@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { User, Edit, Trash2, Eye } from 'lucide-react';
 import AdminLayout from '../components/admin/AdminLayout';
 import SearchFilter from '../components/admin/SearchFilter';
@@ -17,6 +16,10 @@ const UserListPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const itemsPerPage = 5;
+
+  useEffect(() => {
+    document.title = 'User List - Admin Panel | Coffee Shop';
+  }, []);
 
   useEffect(() => {
     const savedUsers = JSON.parse(localStorage.getItem('users') || '[]');
@@ -132,11 +135,6 @@ const UserListPage = () => {
 
   return (
     <AdminLayout title="User List">
-      <Helmet>
-        <title>User List - Admin Panel | Coffee Shop</title>
-        <meta name="description" content="Manage coffee shop users - view, edit, and manage customer accounts" />
-      </Helmet>
-
       <div className="flex items-center justify-between mb-8">
         <SearchFilter
           searchTerm={searchTerm}

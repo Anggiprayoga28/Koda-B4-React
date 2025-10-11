@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
-import { Calendar, Package, MessageCircle } from 'lucide-react';
+import { Package } from 'lucide-react';
 import Notification from '../components/ui/Notification';
 import Pagination from '../components/admin/Pagination';
 
@@ -17,6 +16,10 @@ const HistoryOrderPage = () => {
   const [notification, setNotification] = useState(null);
   
   const itemsPerPage = 4;
+
+  useEffect(() => {
+    document.title = 'Order History - Coffee Shop | Track Your Orders';
+  }, []);
 
   useEffect(() => {
     const savedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
@@ -69,11 +72,6 @@ const HistoryOrderPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Helmet>
-        <title>Order History - Coffee Shop | Track Your Orders</title>
-        <meta name="description" content="View and track all your coffee shop orders. Check order status, details, and history." />
-      </Helmet>
-
       {notification && (
         <Notification message={notification.message} type={notification.type} />
       )}
@@ -126,7 +124,7 @@ const HistoryOrderPage = () => {
                 <select 
                   value={selectedMonth}
                   onChange={(e) => setSelectedMonth(e.target.value)}
-                  className="appearance-none bg-[#F1F1F1] border border-gray-300 px-4 py-3 pr-10 font-medium cursor-pointer hover:border-gray-400 transition"
+                  className="appearance-none bg-[#F1F1F1] px-4 py-5 pr-10 font-medium cursor-pointer hover:border-gray-400 transition"
                 >
                   <option>January 2023</option>
                   <option>February 2023</option>
@@ -135,7 +133,7 @@ const HistoryOrderPage = () => {
                   <option>May 2023</option>
                   <option>June 2023</option>
                 </select>
-                <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                <img src='/public/icons/Calendar.svg' className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
               </div>
             </div>
 
@@ -162,7 +160,7 @@ const HistoryOrderPage = () => {
                               <img src='/public/icons/glass.svg' className="w-4 h-4" />
                               <span>No. Order</span>
                             </div>
-                            <div className="font-semibold">#{order.orderId}</div>
+                            <div className="font-semibold line-clamp-1">#{order.orderId}</div>
                             <button 
                               onClick={() => handleViewOrder(order.orderId)}
                               className="text-orange-500 text-sm font-medium mt-1 hover:underline"
@@ -218,20 +216,20 @@ const HistoryOrderPage = () => {
           </div>
 
           <div>
-            <div className="bg-white shadow-sm p-6 sticky top-4">
-              <div className="flex items-center justify-center w-16 h-16 bg-black rounded-3xl mb-4">
-                <MessageCircle className="w-8 h-8 text-white" />
+            <div className="border border-gray-300 p-6 sticky w-120 h-60 top-4">
+              <div className="flex mb-2">
+                <img src="/public/icons/messages.svg" alt="messages" className='items-center justify-center w-16 h-16 ' />
               </div>
               
-              <h3 className="text-xl font-semibold text-[#4F5665] mb-3">Send Us Message</h3>
+              <h3 className="text-xl font-semibold text-[#4F5665] mb-2">Send Us Message</h3>
               
-              <p className="text-gray-600 text-sm mb-6">
+              <p className="text-gray-600 text-sm mb-2">
                 if your unable to find answer or find your product quickly, please describe your problem and tell us. we will give you solution.
               </p>
 
               <button 
                 onClick={() => setShowMessage(!showMessage)}
-                className="w-full bg-[#FF8906] text-[#0B132A] py-3 rounded-lg hover:bg-orange-600 transition"
+                className="w-full bg-[#FF8906] text-[#0B132A] py-2 rounded-lg hover:bg-orange-600 transition"
               >
                 {showMessage ? 'Hide Message Form' : 'Send Message'}
               </button>

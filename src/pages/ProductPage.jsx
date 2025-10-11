@@ -1,13 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
-import { ChevronLeft, ChevronRight, Mail, User, MapPin } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { products } from '../data/products';
 import { promos } from '../data/promos';
 import MenuCard from '../components/landing/MenuCard';
 import Pagination from '../components/admin/Pagination';
 import Notification from '../components/ui/Notification';
-
 
 const ProductPage = () => {
   const navigate = useNavigate();
@@ -38,6 +36,10 @@ const ProductPage = () => {
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
   const [notification, setNotification] = useState(null);
   const productsPerPage = 9;
+
+  useEffect(() => {
+    document.title = 'Our Products - Coffee Shop | Best Coffee & Food';
+  }, []);
 
   useEffect(() => {
     if (searchParams.get('payment') === 'true') {
@@ -192,11 +194,6 @@ const ProductPage = () => {
     
     return (
       <div className="bg-gray-50 min-h-screen">
-        <Helmet>
-          <title>Checkout - Coffee Shop</title>
-          <meta name="description" content="Complete your order checkout" />
-        </Helmet>
-
         {notification && (
           <Notification message={notification.message} type={notification.type} />
         )}
@@ -232,10 +229,10 @@ const ProductPage = () => {
                     <img src={item.image} alt={item.name} className="w-32 h-32 object-cover" />
                     <div className="flex-1">
                       {item.isFlashSale && (
-                        <span className="bg-red-600 text-white px-3 py-1 text-xs rounded inline-block mb-2">FLASH SALE!</span>
+                        <span className="bg-red-600 text-white px-3 py-1 text-xs rounded-xl inline-block mb-2">FLASH SALE!</span>
                       )}
                       <h3 className=" font-bold text-lg mb-1">{item.name}</h3>
-                      <p className="text-gray-600 text-sm mb-2">{item.quantity}pcs | {item.size} | {item.temp} | {customerInfo.delivery}</p>
+                      <p className="text-[#4F5665] text-lg mb-2">{item.quantity}pcs | {item.size} | {item.temp} | {customerInfo.delivery}</p>
                       <div className="flex items-center gap-3">
                         <span className="text-red-600 line-through text-sm">IDR {item.originalPrice.toLocaleString()}</span>
                         <span className="text-[#FF8906] text-xl">IDR {item.price.toLocaleString()}</span>
@@ -265,7 +262,7 @@ const ProductPage = () => {
                         onChange={(e) => setCustomerInfo({...customerInfo, email: e.target.value})}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10"
                       />
-                      <Mail className="w-5 h-5 absolute left-3 top-4 text-gray-400" />
+                      <img src='/public/icons/mail.svg' className="w-5 h-5 absolute left-3 top-4 text-gray-400" />
                     </div>
                   </div>
 
@@ -279,7 +276,7 @@ const ProductPage = () => {
                         onChange={(e) => setCustomerInfo({...customerInfo, fullName: e.target.value})}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10"
                       />
-                      <User className="w-5 h-5 absolute left-3 top-4 text-gray-400" />
+                      <img src='/public/icons/Profile.svg' className="w-5 h-5 absolute left-3 top-4 text-gray-400" />
                     </div>
                   </div>
 
@@ -293,7 +290,7 @@ const ProductPage = () => {
                         onChange={(e) => setCustomerInfo({...customerInfo, address: e.target.value})}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10"
                       />
-                      <MapPin className="w-5 h-5 absolute left-3 top-4 text-gray-400" />
+                      <img src='/public/icons/Location.svg' className="w-5 h-5 absolute left-3 top-4 text-gray-400" />
                     </div>
                   </div>
 
@@ -320,9 +317,8 @@ const ProductPage = () => {
             </div>
 
             <div>
-              <div className="bg-[#E8E8E84D] p-6 sticky top-4">
-                <h3 className="text-xl font-semibold mb-6">Total</h3>
-                
+              <h3 className="text-xl mb-6">Total</h3>
+              <div className="bg-[#E8E8E84D] p-6 sticky top-4">  
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Order</span>
@@ -351,33 +347,33 @@ const ProductPage = () => {
 
                 <div>
                   <p className="text-sm text-gray-600 mb-3">We Accept</p>
-                  <div className="grid grid-cols-3 gap-2 mb-3">
-                    <div className="border rounded p-2 flex items-center justify-center">
+                  <div className="flex gap-2 mb-3">
+                    <div className="p-2 flex items-center justify-center">
                       <span className="">
                         <img src="/public/BRI.svg" alt="BRI" />
                       </span>
                     </div>
-                    <div className="border rounded p-2 flex items-center justify-center">
+                    <div className="p-2 flex items-center justify-center">
                       <span>
                         <img src="/public/dana.svg" alt="DANA" />
                       </span>
                     </div>
-                    <div className="border rounded p-2 flex items-center justify-center">
+                    <div className="p-2 flex items-center justify-center">
                       <span>
                         <img src="/public/bca.svg" alt="BCA" />
                       </span>
                     </div>
-                    <div className="border rounded p-2 flex items-center justify-center">
+                    <div className="p-2 flex items-center justify-center">
                       <span>
                         <img src="/public/gopay.svg" alt="gopay" />
                       </span>
                     </div>
-                    <div className="border rounded p-2 flex items-center justify-center">
+                    <div className="p-2 flex items-center justify-center">
                       <span>
                         <img src="/public/ovo.svg" alt="OVO" />
                       </span>
                     </div>
-                    <div className="border rounded p-2 flex items-center justify-center">
+                    <div className="p-2 flex items-center justify-center">
                       <span>
                         <img src="/public/paypal.svg" alt="PayPal" />
                       </span>
@@ -395,11 +391,6 @@ const ProductPage = () => {
 
   return (
     <div className="bg-gray-50">
-      <Helmet>
-        <title>Our Products - Coffee Shop | Best Coffee & Food</title>
-        <meta name="description" content="Browse our selection of premium coffee, non-coffee drinks, and delicious food items." />
-      </Helmet>
-
       {notification && (
         <Notification message={notification.message} type={notification.type} />
       )}

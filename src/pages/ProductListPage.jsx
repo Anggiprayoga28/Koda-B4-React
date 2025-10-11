@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { Edit, Trash2 } from 'lucide-react';
 import AdminLayout from '../components/admin/AdminLayout';
 import SearchFilter from '../components/admin/SearchFilter';
@@ -18,7 +17,11 @@ const ProductListPage = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const itemsPerPage = 5;
 
-  React.useEffect(() => {
+  useEffect(() => {
+    document.title = 'Product List - Admin Panel | Coffee Shop';
+  }, []);
+
+  useEffect(() => {
     const params = {};
     if (searchTerm) params.search = searchTerm;
     if (currentPage > 1) params.page = currentPage.toString();
@@ -94,13 +97,13 @@ const ProductListPage = () => {
             }}
             className="text-orange-500 hover:text-orange-600 transition-colors"
           >
-            <Edit className="w-5 h-5" />
+            <img src='/public/icons/edit-admin.svg' className="w-7 h-7" />
           </button>
           <button 
             onClick={() => handleDeleteProduct(product.id)}
             className="text-red-500 hover:text-red-600 transition-colors"
           >
-            <Trash2 className="w-5 h-5" />
+            <img src='/public/icons/trash-admin.svg' className="w-7 h-7" />
           </button>
         </div>
       )
@@ -109,11 +112,7 @@ const ProductListPage = () => {
 
   return (
     <AdminLayout title="Product List">
-      <Helmet>
-        <title>Product List - Admin Panel | Coffee Shop</title>
-        <meta name="description" content="Manage coffee shop products - add, edit, and delete menu items" />
-      </Helmet>
-
+      <div>
       <SearchFilter
         searchTerm={searchTerm}
         onSearchChange={(value) => {
@@ -122,13 +121,14 @@ const ProductListPage = () => {
         }}
         placeholder="Enter Product Name"
       />
+      </div>
 
       <div className="mt-6">
         <ActionButton 
           onClick={() => { 
             setSelectedProduct(null); 
             setIsModalOpen(true); 
-          }}
+          }} 
         >
           Add Product
         </ActionButton>
