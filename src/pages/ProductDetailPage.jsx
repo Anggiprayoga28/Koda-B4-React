@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Minus, Plus, ShoppingCart, Star } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
-import { products } from '../data/products';
+import { getProducts, getProductById } from '../services/apiService';
 import MenuCard from '../components/landing/MenuCard';
 import Pagination from '../components/admin/Pagination';
 
@@ -11,6 +11,8 @@ const ProductDetailPage = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   
+  const [product, setProduct] = useState(null);
+  const [allRecommendations, setAllRecommendations] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('Regular');
   const [selectedTemp, setSelectedTemp] = useState('Ice');
@@ -18,16 +20,43 @@ const ProductDetailPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 3;
 
-  const product = products.find(p => p.id === parseInt(id)) || products[0];
+  useEffect(() => {
+    const fetchProductData = async () => {
+      try {
+        const [productData, allProducts] = await Promise.all([
+          getProductById(id),
+          getProducts()
+        ]);
+        setProduct(productData);
+        setAllRecommendations(allProducts.filter(p => p.id !== parseInt(id)));
+      } catch (err) {
+        console.error('Error fetching product:', err);
+      }
+    };
+
+    fetchProductData();
+  }, [id]);
 
   useEffect(() => {
-    document.title = `${product.name} - Coffee Shop`;
-  }, [product.name]);
+    if (product) {
+      document.title = `${product.name} - Coffee Shop`;
+    }
+  }, [product]);
 
   useEffect(() => {
     setCurrentPage(1);
     window.scrollTo(0, 0);
   }, [id]);
+
+  if (!product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-500">Loading...</p>
+        </div>
+      </div>
+    );
+  }
   
   const productImages = [
     product.image,
@@ -35,8 +64,6 @@ const ProductDetailPage = () => {
     '/public/coffee2.png',
     '/public/coffee3.png'
   ];
-
-  const allRecommendations = products.filter(p => p.id !== product.id);
 
   const totalPages = Math.ceil(allRecommendations.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -227,7 +254,7 @@ const ProductDetailPage = () => {
           
           {currentRecommendations.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 mb-8">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 mb-8">
                 {currentRecommendations.map((item) => (
                   <div 
                     key={item.id}
