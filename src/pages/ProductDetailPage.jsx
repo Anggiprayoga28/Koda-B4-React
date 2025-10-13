@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Minus, Plus, ShoppingCart, Star } from 'lucide-react';
+import { useCart } from '../contexts/CartContext';
 import { products } from '../data/products';
 import MenuCard from '../components/landing/MenuCard';
 import Pagination from '../components/admin/Pagination';
@@ -8,6 +9,7 @@ import Pagination from '../components/admin/Pagination';
 const ProductDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { addToCart } = useCart();
   
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('Regular');
@@ -46,34 +48,12 @@ const ProductDetailPage = () => {
   };
 
   const handleBuyNow = () => {
-    const cartItem = {
-      ...product,
-      quantity: quantity,
-      size: selectedSize,
-      temp: selectedTemp,
-      cartId: Date.now()
-    };
-    
-    const tempCart = JSON.parse(sessionStorage.getItem('tempCart') || '[]');
-    tempCart.push(cartItem);
-    sessionStorage.setItem('tempCart', JSON.stringify(tempCart));
-    
+    addToCart(product, quantity, selectedSize, selectedTemp);
     navigate('/product?payment=true');
   };
 
   const handleAddToCart = () => {
-    const cartItem = {
-      ...product,
-      quantity: quantity,
-      size: selectedSize,
-      temp: selectedTemp,
-      cartId: Date.now()
-    };
-    
-    const tempCart = JSON.parse(sessionStorage.getItem('tempCart') || '[]');
-    tempCart.push(cartItem);
-    sessionStorage.setItem('tempCart', JSON.stringify(tempCart));
-    
+    addToCart(product, quantity, selectedSize, selectedTemp);
     navigate('/product?payment=true');
   };
 
