@@ -1,6 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useCart } from '../contexts/CartContext';
+import { useOrders } from '../contexts/OrderContext';
 import { products } from '../data/products';
 import { promos } from '../data/promos';
 import MenuCard from '../components/landing/MenuCard';
@@ -10,6 +13,9 @@ import Notification from '../components/ui/Notification';
 const ProductPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { user } = useSelector((state) => state.auth);
+  const { cart, removeFromCart, clearCart, getCartTotal } = useCart();
+  const { createOrder } = useOrders();
   
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [categories, setCategories] = useState({
@@ -25,7 +31,6 @@ const ProductPage = () => {
     parseInt(searchParams.get('maxPrice')) || 50000
   ]);
   const [promoIndex, setPromoIndex] = useState(0);
-  const [cart, setCart] = useState([]);
   const [showPayment, setShowPayment] = useState(searchParams.get('payment') === 'true');
   const [customerInfo, setCustomerInfo] = useState({
     email: '',
@@ -43,11 +48,7 @@ const ProductPage = () => {
 
   useEffect(() => {
     if (searchParams.get('payment') === 'true') {
-      const tempCart = JSON.parse(sessionStorage.getItem('tempCart') || '[]');
-      if (tempCart.length > 0) {
-        setCart(tempCart);
-        setShowPayment(true);
-      }
+      setShowPayment(true);
     }
   }, [searchParams]);
 
@@ -127,14 +128,8 @@ const ProductPage = () => {
   const nextPromo = () => setPromoIndex((prev) => (prev + 1) % (promos.length - 2));
   const prevPromo = () => setPromoIndex((prev) => (prev - 1 + (promos.length - 2)) % (promos.length - 2));
 
-  const removeFromCart = (cartId) => {
-    const updatedCart = cart.filter(item => item.cartId !== cartId);
-    setCart(updatedCart);
-    sessionStorage.setItem('tempCart', JSON.stringify(updatedCart));
-  };
-
   const calculateTotal = () => {
-    const orderTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const orderTotal = getCartTotal();
     const delivery = 0;
     const tax = orderTotal * 0.1;
     return { orderTotal, delivery, tax, subTotal: orderTotal + delivery + tax };
@@ -151,27 +146,19 @@ const ProductPage = () => {
       return;
     }
 
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
     const totals = calculateTotal();
     
-    const newOrder = {
-      orderId: `ORD${Date.now()}`,
-      orderDate: new Date().toISOString(),
+    const newOrder = createOrder({
       items: cart,
       customerInfo: customerInfo,
       orderTotal: totals.orderTotal,
       delivery: totals.delivery,
       tax: totals.tax,
       total: totals.subTotal,
-      status: 'On Progress',
-      userId: currentUser ? currentUser.id : null
-    };
+      userId: user ? user.id : null
+    });
 
-    const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-    existingOrders.push(newOrder);
-    localStorage.setItem('orders', JSON.stringify(existingOrders));
-    
-    sessionStorage.removeItem('tempCart');
+    clearCart();
 
     navigate('/history-order', { 
       state: { 
@@ -199,7 +186,7 @@ const ProductPage = () => {
         )}
 
         <div className="max-w-7xl mx-auto px-8 py-12">
-          <h1 className="text-4xl  mb-8">Payment Details</h1>
+          <h1 className="text-4xl mb-8">Payment Details</h1>
           
           <div className="grid grid-cols-3 gap-8">
             <div className="col-span-2">
@@ -231,7 +218,7 @@ const ProductPage = () => {
                       {item.isFlashSale && (
                         <span className="bg-red-600 text-white px-3 py-1 text-xs rounded-xl inline-block mb-2">FLASH SALE!</span>
                       )}
-                      <h3 className=" font-bold text-lg mb-1">{item.name}</h3>
+                      <h3 className="font-bold text-lg mb-1">{item.name}</h3>
                       <p className="text-[#4F5665] text-lg mb-2">{item.quantity}pcs | {item.size} | {item.temp} | {customerInfo.delivery}</p>
                       <div className="flex items-center gap-3">
                         <span className="text-red-600 line-through text-sm">IDR {item.originalPrice.toLocaleString()}</span>
@@ -334,7 +321,7 @@ const ProductPage = () => {
                   </div>
                   <div className="border-t pt-3 flex justify-between">
                     <span className="font-semibold">Sub Total</span>
-                    <span className=" text-lg">Idr. {Math.round(totals.subTotal).toLocaleString()}</span>
+                    <span className="text-lg">Idr. {Math.round(totals.subTotal).toLocaleString()}</span>
                   </div>
                 </div>
 
@@ -349,34 +336,22 @@ const ProductPage = () => {
                   <p className="text-sm text-gray-600 mb-3">We Accept</p>
                   <div className="flex gap-2 mb-3">
                     <div className="p-2 flex items-center justify-center">
-                      <span className="">
-                        <img src="/public/BRI.svg" alt="BRI" />
-                      </span>
+                      <img src="/public/BRI.svg" alt="BRI" />
                     </div>
                     <div className="p-2 flex items-center justify-center">
-                      <span>
-                        <img src="/public/dana.svg" alt="DANA" />
-                      </span>
+                      <img src="/public/dana.svg" alt="DANA" />
                     </div>
                     <div className="p-2 flex items-center justify-center">
-                      <span>
-                        <img src="/public/bca.svg" alt="BCA" />
-                      </span>
+                      <img src="/public/bca.svg" alt="BCA" />
                     </div>
                     <div className="p-2 flex items-center justify-center">
-                      <span>
-                        <img src="/public/gopay.svg" alt="gopay" />
-                      </span>
+                      <img src="/public/gopay.svg" alt="gopay" />
                     </div>
                     <div className="p-2 flex items-center justify-center">
-                      <span>
-                        <img src="/public/ovo.svg" alt="OVO" />
-                      </span>
+                      <img src="/public/ovo.svg" alt="OVO" />
                     </div>
                     <div className="p-2 flex items-center justify-center">
-                      <span>
-                        <img src="/public/paypal.svg" alt="PayPal" />
-                      </span>
+                      <img src="/public/paypal.svg" alt="PayPal" />
                     </div>
                   </div>
                   <p className="text-xs text-gray-500">*Get Discount if you pay with Bank Central Asia</p>
@@ -397,7 +372,7 @@ const ProductPage = () => {
 
       <div className="relative h-96 flex items-center justify-start px-16" style={{ backgroundImage: 'url(/public/cover-product.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-        <h1 className="relative text-white text-5xl  max-w-xl leading-tight">We Provide Good Coffee and Healthy Meals</h1>
+        <h1 className="relative text-white text-5xl max-w-xl leading-tight">We Provide Good Coffee and Healthy Meals</h1>
       </div>
 
       <div className="w-full bg-white py-12">
@@ -419,7 +394,7 @@ const ProductPage = () => {
                 <img src='/public/mother.svg' className="w-full" alt="promo" />
               </div>
               <div className="flex-1">
-                <h3 className=" text-sm mb-1.5 leading-tight">{promo.title}</h3>
+                <h3 className="text-sm mb-1.5 leading-tight">{promo.title}</h3>
                 <p className="text-xs mb-2.5 leading-snug">{promo.description}</p>
                 <button className="text-xs text-white">{promo.code}</button>
               </div>
@@ -428,7 +403,7 @@ const ProductPage = () => {
           {promos.slice(promoIndex + 3, promoIndex + 4).map((promo, idx) => (
             <div key={idx} className={`${promo.bgColor} rounded-2xl p-6 flex items-center gap-4`}>
               <div className="flex-1">
-                <h3 className=" text-sm mb-1.5 leading-tight">{promo.title}</h3>
+                <h3 className="text-sm mb-1.5 leading-tight">{promo.title}</h3>
                 <p className="text-xs leading-snug">{promo.description}</p>
               </div>
               <div className="w-16 h-16 flex items-center justify-center flex-shrink-0">
