@@ -1,5 +1,11 @@
 import React from 'react';
 
+/**
+ * @param {string} text - Main text
+ * @param {string} linkText - Link text
+ * @param {Function} onClick - Click handler
+ */
+
 const LinkText = ({ text, linkText, onClick }) => (
   <p className="text-center text-gray-600 mt-6 text-sm">
     {text}{' '}

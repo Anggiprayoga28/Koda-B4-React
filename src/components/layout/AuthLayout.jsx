@@ -1,5 +1,10 @@
 import React from 'react';
 
+/**
+ * @param {ReactNode} children - Page content
+ * @param {string} imageUrl - Background image URL
+ */
+
 const AuthLayout = ({ children, imageUrl }) => {
   return (
     <div className="min-h-screen flex">

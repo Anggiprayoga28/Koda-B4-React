@@ -1,5 +1,10 @@
 import React from 'react';
 
+/**
+ * @param {Object} props - Component props
+ * @param {string} props.status - Status text to display
+ * @param {string} [props.variant='default'] - Badge color variant (success|warning|danger|default)
+ */
 const StatusBadge = ({ status, variant = "default" }) => {
   const variants = {
     success: 'bg-green-100 text-green-700',

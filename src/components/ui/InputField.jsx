@@ -1,6 +1,17 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
+/**
+ * @param {string} type - Input type
+ * @param {string} placeholder - Placeholder text
+ * @param {string} value - Input value
+ * @param {Function} onChange - Change handler
+ * @param {string} name - Input name
+ * @param {boolean} disabled - Disabled state
+ * @param {string} label - Input label
+ * @param {ReactNode} rightElement - Right side element
+ */
+
 const InputField = ({ 
   icon: Icon, 
   type = 'text', 

@@ -1,6 +1,15 @@
 import React from 'react';
 import { Search, Filter } from 'lucide-react';
 
+/**
+ * @param {Object} props - Component props
+ * @param {string} props.searchTerm - Current search value
+ * @param {Function} props.onSearchChange - Handler for search input change
+ * @param {string} [props.placeholder='Search...'] - Input placeholder text
+ * @param {boolean} [props.showFilter=true] - Show/hide filter button
+ * @param {Function} [props.onFilterClick] - Handler for filter button click
+ * @param {React.ReactNode} [props.extraFilters] - Additional filter components
+ */
 const SearchFilter = ({ 
   searchTerm, 
   onSearchChange, 

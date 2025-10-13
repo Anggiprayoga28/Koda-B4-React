@@ -8,6 +8,10 @@ import {
   logout as logoutAction,
 } from './authSlice';
 
+/**
+ * @param {Object} formData - Login form data
+ * @returns {Function} Thunk function
+ */
 export const login = (formData) => (dispatch) => {
   dispatch(loginStart());
 
@@ -40,6 +44,10 @@ export const login = (formData) => (dispatch) => {
   }
 };
 
+/**
+ * @param {Object} formData - Registration form data
+ * @returns {Function} Thunk function
+ */
 export const register = (formData) => (dispatch) => {
   dispatch(registerStart());
 
@@ -72,6 +80,9 @@ export const register = (formData) => (dispatch) => {
   }
 };
 
+/**
+ * @returns {Function} Thunk function
+ */
 export const logout = () => (dispatch) => {
   localStorage.removeItem('currentUser');
   dispatch(logoutAction());

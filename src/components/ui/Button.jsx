@@ -1,5 +1,13 @@
 import React from 'react';
 
+/**
+ * @param {ReactNode} children - Button content
+ * @param {Function} onClick - Click handler
+ * @param {string} type - Button type
+ * @param {boolean} fullWidth - Full width flag
+ * @param {string} className - Additional classes
+ */
+
 const Button = ({ children, onClick, variant = 'primary', type = 'button', fullWidth = true, className = '' }) => {
   const baseStyle = "py-4 transition-all shadow-sm text-base";
   const widthStyle = fullWidth ? "w-full" : "";

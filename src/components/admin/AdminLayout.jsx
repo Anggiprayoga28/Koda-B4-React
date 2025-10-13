@@ -11,6 +11,11 @@ import {
 } from 'lucide-react';
 import Logo from '../ui/Logo';
 
+/**
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Page content to render
+ * @param {string} [props.title] - Page title to display in header
+ */
 const AdminLayout = ({ children, title }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
@@ -22,6 +27,7 @@ const AdminLayout = ({ children, title }) => {
     { path: '/admin/orders', icon: ShoppingCart, label: 'Orders' },
     { path: '/admin/users', icon: Users, label: 'Users' },
   ];
+
 
   const handleLogout = () => {
     if (window.confirm('Are you sure you want to logout?')) {

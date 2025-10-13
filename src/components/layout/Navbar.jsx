@@ -3,6 +3,12 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, ShoppingCart, Menu, X, User, ChevronDown } from 'lucide-react';
 import Logo from '../ui/Logo';
 
+/**
+ * @param {Object} user - Current user object
+ * @param {Function} onLogout - Logout handler
+ */
+
+
 const Navbar = ({ user, onLogout }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);

@@ -1,5 +1,12 @@
 import React from 'react';
 
+/**
+ * @param {Object} props - Component props
+ * @param {Array} props.columns - Column configuration array
+ * @param {Array} props.data - Data array to display
+ * @param {Function} [props.onRowClick] - Handler when row is clicked
+ * @param {string} [props.emptyMessage='No data found'] - Message when data is empty
+ */
 const DataTable = ({ columns, data, onRowClick, emptyMessage = "No data found" }) => {
   return (
     <div className="bg-white rounded-2xl shadow-sm overflow-hidden">

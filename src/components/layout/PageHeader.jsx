@@ -1,6 +1,11 @@
 import React from 'react';
 import Logo from '../ui/Logo';
 
+/**
+ * @param {string} title - Page title
+ * @param {string} subtitle - Page subtitle
+ */
+
 const PageHeader = ({ title, subtitle }) => (
   <div className="mb-10">
     <div className=" flex mb-8">

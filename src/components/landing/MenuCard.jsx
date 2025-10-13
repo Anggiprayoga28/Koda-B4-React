@@ -1,6 +1,14 @@
 import React from 'react';
 import { ShoppingCart } from 'lucide-react';
 
+/**
+ * @param {string} title - Product name
+ * @param {string} price - Product price
+ * @param {string} description - Product description
+ * @param {string} image - Product image URL
+ * @param {boolean} isFlashSale - Flash sale badge
+ */
+
 const MenuCard = ({ title, price, description, image, isFlashSale }) => {
   return (
     <div className="relative overflow-hidden sm:w-[280px] md:w-[300px] min-h-[420px] mx-auto">

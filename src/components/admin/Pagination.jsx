@@ -1,5 +1,13 @@
 import React from 'react';
 
+/**
+ * @param {Object} props - Component props
+ * @param {number} props.currentPage - Current active page number
+ * @param {number} props.totalPages - Total number of pages
+ * @param {Function} props.onPageChange - Handler when page changes
+ * @param {number} props.itemsPerPage - Number of items per page
+ * @param {number} props.totalItems - Total number of items
+ */
 const Pagination = ({ 
   currentPage, 
   totalPages, 
