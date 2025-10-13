@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useOrders } from '../contexts/OrderContext';
 import AdminLayout from '../components/admin/AdminLayout';
 
 const DashboardPage = () => {
+  const { getOrderStats, getTopProducts } = useOrders();
   const [stats, setStats] = useState({
     onProgress: { count: 0, change: 11.01 },
     shipping: { count: 0, change: 4.01 },
@@ -16,67 +18,15 @@ const DashboardPage = () => {
 
   useEffect(() => {
     const loadDashboardData = () => {
-      const ordersData = localStorage.getItem('orders');
-      let orders = [];
+      const orderStats = getOrderStats();
+      setStats(orderStats);
 
-      if (ordersData) {
-        try {
-          orders = JSON.parse(ordersData);
-        } catch (error) {
-          console.error('Error parsing orders:', error);
-          orders = [];
-        }
-      }
-
-      if (!Array.isArray(orders)) {
-        orders = [];
-      }
-
-      const onProgress = orders.filter(o => o && o.status === 'On Progress').length;
-      const shipping = orders.filter(o => o && o.status === 'Sending Goods').length;
-      const done = orders.filter(o => o && o.status === 'Finish Order').length;
-
-      setStats({
-        onProgress: { count: onProgress, change: 11.01 },
-        shipping: { count: shipping, change: 4.01 },
-        done: { count: done, change: 2.01 }
-      });
-
-      const productSales = {};
-      
-      orders.forEach(order => {
-        if (!order || !order.items || !Array.isArray(order.items)) return;
-
-        order.items.forEach(item => {
-          if (!item || !item.name) return;
-
-          const itemName = item.name;
-          const quantity = parseInt(item.quantity) || 0;
-          const price = parseFloat(item.price) || 0;
-
-          if (!productSales[itemName]) {
-            productSales[itemName] = { count: 0, revenue: 0 };
-          }
-
-          productSales[itemName].count += quantity;
-          productSales[itemName].revenue += price * quantity;
-        });
-      });
-
-      const topProductsList = Object.entries(productSales)
-        .map(([name, data]) => ({ 
-          name, 
-          sold: data.count, 
-          revenue: data.revenue 
-        }))
-        .sort((a, b) => b.sold - a.sold)
-        .slice(0, 10);
-
+      const topProductsList = getTopProducts();
       setTopProducts(topProductsList);
     };
 
     loadDashboardData();
-  }, []);
+  }, [getOrderStats, getTopProducts]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('id-ID', {
