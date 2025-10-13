@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Edit, Trash2 } from 'lucide-react';
 import AdminLayout from '../components/admin/AdminLayout';
 import SearchFilter from '../components/admin/SearchFilter';
 import DataTable from '../components/admin/DataTable';
 import Pagination from '../components/admin/Pagination';
 import ActionButton from '../components/admin/ActionButton';
 import ProductFormModal from '../components/admin/ProductFormModal';
-import { products } from '../data/products';
+import { getProducts } from '../services/apiService';
 
 const ProductListPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,6 +21,24 @@ const ProductListPage = () => {
 
   useEffect(() => {
     document.title = 'Product List - Admin Panel | Coffee Shop';
+  }, []);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const data = await getProducts();
+        setProducts(data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setError('Failed to load products');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
   }, []);
 
   useEffect(() => {
@@ -110,17 +130,43 @@ const ProductListPage = () => {
     }
   ];
 
+  if (loading) {
+    return (
+      <AdminLayout title="Product List">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AdminLayout title="Product List">
+        <div className="text-center py-12">
+          <p className="text-red-500 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600"
+          >
+            Retry
+          </button>
+        </div>
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout title="Product List">
       <div>
-      <SearchFilter
-        searchTerm={searchTerm}
-        onSearchChange={(value) => {
-          setSearchTerm(value);
-          setCurrentPage(1);
-        }}
-        placeholder="Enter Product Name"
-      />
+        <SearchFilter
+          searchTerm={searchTerm}
+          onSearchChange={(value) => {
+            setSearchTerm(value);
+            setCurrentPage(1);
+          }}
+          placeholder="Enter Product Name"
+        />
       </div>
 
       <div className="mt-6">
