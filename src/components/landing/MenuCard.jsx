@@ -9,12 +9,12 @@ import { ShoppingCart } from 'lucide-react';
  * @param {boolean} isFlashSale - Flash sale badge
  */
 
-const MenuCard = ({ title, price, description, image, isFlashSale }) => {
+const MenuCard = ({ title, originalPrice, price, description, image, isFlashSale }) => {
   return (
-    <div className="relative overflow-hidden sm:w-[280px] md:w-[300px] min-h-[420px] mx-auto">
+    <div className="relative overflow-hidden w-full sm:w-[280px] md:w-[300px] min-h-[420px] mx-auto">
       <div className="relative w-full h-48 sm:h-52 md:h-56 overflow-hidden">
         {isFlashSale && (
-          <span className="absolute top-3 left-3 bg-red-600 text-white px-3 py-1 text-xs font-semibold rounded-full z-10">
+          <span className="absolute top-3 left-3 bg-red-600 text-white px-3 py-1 text-xs rounded-full z-10">
             FLASH SALE!
           </span>
         )}
@@ -26,20 +26,24 @@ const MenuCard = ({ title, price, description, image, isFlashSale }) => {
       </div>
 
       <div className="absolute top-44 left-1/2 -translate-x-1/2 w-[90%] sm:w-[90%] md:w-[262px] bg-white p-4 shadow-md">
-        <h3 className="text-lg text-gray-800 mb-1">{title}</h3>
-        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{description}</p>
+        <h3 className="text-base sm:text-lg text-gray-800 mb-1">{title}</h3>
+        <p className="text-xs sm:text-sm text-gray-600 mb-3 line-clamp-2">{description}</p>
 
         <div className="flex flex-col text-left">
-          <span className="text-lg text-[#FF8906] mb-2">
-            IDR {price}
-          </span>
-
+          <div className='flex gap-3 items-center'>
+            <span className="text-xs sm:text-sm text-red-600 line-through mb-2">
+              IDR {originalPrice}
+            </span>
+            <span className="text-base sm:text-lg text-[#FF8906] mb-2">
+              IDR {price}
+            </span>
+          </div>
           <div className="flex justify-between gap-2">
-            <button className="w-full bg-[#FF8906] hover:bg-[#e67a05] text-black font-medium px-4 py-2 rounded-md transition-colors">
+            <button className="w-full bg-[#FF8906] hover:bg-[#e67a05] text-black font-medium px-3 sm:px-4 py-2 rounded-md transition-colors text-sm sm:text-base">
               Buy
             </button>
             <button className="border border-[#FF8906] p-2 rounded-md hover:bg-[#FFF3E0] transition-colors">
-              <ShoppingCart className="w-5 h-5 text-[#FF8906]" />
+              <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF8906]" />
             </button>
           </div>
         </div>
