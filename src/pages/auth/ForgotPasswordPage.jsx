@@ -38,27 +38,61 @@ const ForgotPasswordPage = ({ onForgotPassword }) => {
   };
 
   return (
-    <AuthLayout imageUrl="/public/forgot-cover.png">
-      <PageHeader 
-        title="Fill out the form correctly" 
-        subtitle="We will send new password to your email" 
-      />
-      <div className="space-y-4">
-        <FormField label="Email" error={error}>
-          <InputField 
-            icon={Mail} 
-            type="email" 
-            name="email" 
-            placeholder="Enter Your Email" 
-            value={email} 
-            onChange={handleChange} 
+    <>
+      <div className="hidden md:block">
+        <AuthLayout imageUrl="/public/forgot-cover.png">
+          <PageHeader 
+            title="Fill out the form correctly" 
+            subtitle="We will send new password to your email" 
           />
-        </FormField>
-        <div className="pt-2">
-          <Button onClick={handleSubmit} variant="primary">Submit</Button>
+          <div className="space-y-4">
+            <FormField label="Email" error={error}>
+              <InputField 
+                icon={Mail} 
+                type="email" 
+                name="email" 
+                placeholder="Enter Your Email" 
+                value={email} 
+                onChange={handleChange} 
+              />
+            </FormField>
+            <div className="pt-2">
+              <Button onClick={handleSubmit} variant="primary">Submit</Button>
+            </div>
+          </div>
+        </AuthLayout>
+      </div>
+
+      <div className="md:hidden min-h-screen bg-white flex flex-col">
+        <div className="flex-1 flex flex-col p-6">
+          <div className="flex items-center gap-2 mb-6">
+            <img src="/public/logo-coklat.svg" alt="Coffee Shop" className="h-10" />
+          </div>
+
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-800 mb-1">Fill Out The Form Correctly</h1>
+            <p className="text-gray-500 text-sm">We will send new password to your email</p>
+          </div>
+
+          <div className="space-y-4 flex-1">
+            <FormField label="Email" error={error}>
+              <InputField 
+                icon={Mail} 
+                type="email" 
+                name="email" 
+                placeholder="Enter Your Email" 
+                value={email} 
+                onChange={handleChange} 
+              />
+            </FormField>
+          </div>
+
+          <div className="mt-4">
+            <Button onClick={handleSubmit} variant="primary">Submit</Button>
+          </div>
         </div>
       </div>
-    </AuthLayout>
+    </>
   );
 };
 
