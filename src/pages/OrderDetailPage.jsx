@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useOrders } from '../contexts/OrderContext';
 
 const OrderDetailPage = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
+  const { getOrderById } = useOrders();
   const [order, setOrder] = useState(null);
 
   useEffect(() => {
@@ -11,10 +13,9 @@ const OrderDetailPage = () => {
   }, [orderId]);
 
   useEffect(() => {
-    const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-    const foundOrder = orders.find(o => o.orderId === orderId);
+    const foundOrder = getOrderById(orderId);
     setOrder(foundOrder);
-  }, [orderId]);
+  }, [orderId, getOrderById]);
 
   const handleBack = () => {
     navigate('/history-order'); 
