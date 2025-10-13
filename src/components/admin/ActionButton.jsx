@@ -1,6 +1,12 @@
 import React from 'react';
 import { Plus } from 'lucide-react';
 
+/**
+ * @param {Object} props - Component props
+ * @param {Function} props.onClick - Click handler function
+ * @param {React.ReactNode} props.children - Button text/content
+ * @param {string} [props.variant='primary'] - Button style variant (primary|secondary|danger)
+ */
 const ActionButton = ({ onClick, icon: Icon = Plus, children, variant = "primary" }) => {
   const variants = {
     primary: "bg-[#FF8906] text-[#0B132A] hover:bg-orange-600",
