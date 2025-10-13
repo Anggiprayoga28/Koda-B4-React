@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Package } from 'lucide-react';
+import { useOrders } from '../contexts/OrderContext';
 import Notification from '../components/ui/Notification';
 import Pagination from '../components/admin/Pagination';
 
 const HistoryOrderPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { orders } = useOrders();
+  
   const [activeTab, setActiveTab] = useState('on-progress');
   const [selectedMonth, setSelectedMonth] = useState('January 2023');
   const [showMessage, setShowMessage] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [orders, setOrders] = useState([]);
   const [message, setMessage] = useState('');
   const [notification, setNotification] = useState(null);
   
@@ -22,9 +24,6 @@ const HistoryOrderPage = () => {
   }, []);
 
   useEffect(() => {
-    const savedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-    setOrders(savedOrders);
-
     if (location.state?.fromCheckout && location.state?.message) {
       showNotification(location.state.message, 'success');
       navigate(location.pathname, { replace: true });
@@ -69,6 +68,8 @@ const HistoryOrderPage = () => {
   };
 
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentOrders = filteredOrders.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -137,7 +138,7 @@ const HistoryOrderPage = () => {
               </div>
             </div>
 
-            {filteredOrders.length === 0 ? (
+            {currentOrders.length === 0 ? (
               <div className="bg-white rounded-lg shadow-sm p-12 text-center">
                 <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500 text-lg">No orders found in this category</p>
@@ -145,7 +146,7 @@ const HistoryOrderPage = () => {
             ) : (
               <>
                 <div className="space-y-4">
-                  {filteredOrders.map((order) => (
+                  {currentOrders.map((order) => (
                     <div key={order.orderId} className="bg-[#E8E8E84D] p-6 hover:shadow-md transition">
                       <div className="flex items-center gap-6">
                         <img 
