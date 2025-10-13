@@ -127,27 +127,27 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-6xl mx-auto px-8">
-        <h1 className="text-5xl font-light mb-12">Profile</h1>
+    <div className="min-h-screen bg-white md:bg-gray-50 py-6 md:py-12">
+      <div className="max-w-6xl mx-auto px-4 md:px-8">
+        <h1 className="text-3xl md:text-5xl font-light mb-6 md:mb-12">Profile</h1>
 
-        <div className="grid grid-cols-3 gap-8">
-          <div className="col-span-1">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+          <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm p-6 text-center">
-              <h2 className="text-2xl font-semibold mb-2">{profileData.fullName}</h2>
-              <p className="text-gray-600 mb-6">{profileData.email}</p>
+              <h2 className="text-xl md:text-2xl font-semibold mb-2">{profileData.fullName}</h2>
+              <p className="text-gray-600 mb-6 text-sm md:text-base">{profileData.email}</p>
 
               <div className="relative inline-block mb-6">
-                <div className="w-40 h-40 rounded-full overflow-hidden bg-gray-200 mx-auto">
+                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden bg-gray-200 mx-auto">
                   {profileData.photoUrl ? (
                     <img src={profileData.photoUrl} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gray-300">
-                      <img src='/public/icons/Profile.svg' className="w-20 h-20 text-gray-500" />
+                      <img src='/public/icons/Profile.svg' className="w-16 h-16 md:w-20 md:h-20 text-gray-500" />
                     </div>
                   )}
                 </div>
-                <label className="absolute bottom-0 right-0 bg-[#FF8906] text-[#4F5665] p-2 rounded-full cursor-pointer hover:bg-orange-600 transition">
+                <label className="absolute bottom-0 right-0 bg-[#FF8906] text-[#4F5665] p-2 rounded-full cursor-pointer hover:bg-orange-600 transition hidden">
                   <Camera className="w-5 h-5" />
                   <input 
                     type="file" 
@@ -160,68 +160,68 @@ const ProfilePage = () => {
 
               <button 
                 onClick={() => document.querySelector('input[type="file"]').click()}
-                className="w-full bg-[#FF8906] text-black py-3 rounded-lg hover:bg-orange-600 transition mb-4"
+                className="w-full bg-[#FF8906] text-black py-3 rounded-lg hover:bg-orange-600 transition mb-4 font-medium"
               >
                 Upload New Photo
               </button>
 
-              <p className="text-lg text-gray-500">
+              <p className="text-base md:text-lg text-gray-500">
                 Since {formatDate(profileData.createdAt)}
               </p>
             </div>
           </div>
 
-          <div className="col-span-2">
-            <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm p-8">
-              <div className="space-y-6">
+          <div className="lg:col-span-2">
+            <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm p-6 md:p-8">
+              <div className="space-y-5 md:space-y-6">
                 <div>
-                  <label className="block text-lg font-medium mb-2">Full Name</label>
+                  <label className="block text-base md:text-lg font-medium mb-2">Full Name</label>
                   <div className="relative">
                     <input 
                       type="text"
                       value={profileData.fullName}
                       onChange={(e) => setProfileData({...profileData, fullName: e.target.value})}
                       disabled={!isEditing}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10 disabled:bg-gray-50 disabled:text-gray-600"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10 disabled:bg-gray-50 disabled:text-gray-600 text-sm md:text-base"
                     />
-                    <img src='/public/icons/Profile.svg' className="w-5 h-5 absolute left-3 top-4 text-gray-400" />
+                    <img src='/public/icons/Profile.svg' className="w-5 h-5 absolute left-3 top-3.5 text-gray-400" />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-lg font-medium mb-2">Email</label>
+                  <label className="block text-base md:text-lg font-medium mb-2">Email</label>
                   <div className="relative">
                     <input 
                       type="email"
                       value={profileData.email}
                       disabled
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10 bg-gray-50 text-gray-600"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10 bg-gray-50 text-gray-600 text-sm md:text-base"
                     />
-                    <img src='/public/icons/mail.svg' className="w-5 h-5 absolute left-3 top-4 text-gray-400" />
+                    <img src='/public/icons/mail.svg' className="w-5 h-5 absolute left-3 top-3.5 text-gray-400" />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-lg font-medium mb-2">Phone</label>
+                  <label className="block text-base md:text-lg font-medium mb-2">Phone</label>
                   <div className="relative">
                     <input 
                       type="tel"
                       value={profileData.phone}
                       onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
                       disabled={!isEditing}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10 disabled:bg-gray-50 disabled:text-gray-600"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10 disabled:bg-gray-50 disabled:text-gray-600 text-sm md:text-base"
                     />
-                    <img src='/public/icons/PhoneCall.svg' className="w-5 h-5 absolute left-3 top-4 text-gray-400" />
+                    <img src='/public/icons/PhoneCall.svg' className="w-5 h-5 absolute left-3 top-3.5 text-gray-400" />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="block text-lg font-medium">Password</label>
+                    <label className="block text-base md:text-lg font-medium">Password</label>
                     <button 
                       type="button"
                       onClick={() => setShowPasswordModal(true)}
-                      className="text-orange-500 text-lg hover:underline"
+                      className="text-orange-500 text-sm md:text-base hover:underline"
                     >
                       Set New Password
                     </button>
@@ -231,13 +231,13 @@ const ProfilePage = () => {
                       type={showPassword ? "text" : "password"}
                       value="**********"
                       disabled
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10 pr-10 bg-gray-50 text-gray-600"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10 pr-10 bg-gray-50 text-gray-600 text-sm md:text-base"
                     />
-                    <img src='/public/icons/Password.svg' className="w-5 h-5 absolute left-3 top-4 text-gray-400" />
+                    <img src='/public/icons/Password.svg' className="w-5 h-5 absolute left-3 top-3.5 text-gray-400" />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-4 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -245,21 +245,21 @@ const ProfilePage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-lg font-medium mb-2">Address</label>
+                  <label className="block text-base md:text-lg font-medium mb-2">Address</label>
                   <div className="relative">
                     <input 
                       type="text"
                       value={profileData.address}
                       onChange={(e) => setProfileData({...profileData, address: e.target.value})}
                       disabled={!isEditing}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10 disabled:bg-gray-50 disabled:text-gray-600"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10 disabled:bg-gray-50 disabled:text-gray-600 text-sm md:text-base"
                     />
-                    <img src='/public/icons/Location.svg' className="w-5 h-5 absolute left-3 top-4 text-gray-400" />
+                    <img src='/public/icons/Location.svg' className="w-5 h-5 absolute left-3 top-3.5 text-gray-400" />
                   </div>
                 </div>
               </div>
 
-              <div className="flex gap-4 mt-8">
+              <div className="flex gap-4 mt-6 md:mt-8">
                 {isEditing ? (
                   <>
                     <button 
@@ -280,7 +280,7 @@ const ProfilePage = () => {
                   <button 
                     type="button"
                     onClick={() => setIsEditing(true)}
-                    className="w-full bg-[#FF8906] text-black py-3 rounded-lg hover:bg-orange-600 transition"
+                    className="w-full bg-[#FF8906] text-black py-3 rounded-lg hover:bg-orange-600 transition font-semibold"
                   >
                     Submit
                   </button>
@@ -293,39 +293,39 @@ const ProfilePage = () => {
 
       {showPasswordModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-8">
-            <h2 className="text-2xl font-bold mb-6">Change Password</h2>
+          <div className="bg-white rounded-lg max-w-md w-full p-6 md:p-8">
+            <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Change Password</h2>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-lg font-medium mb-2">Current Password</label>
+                <label className="block text-base md:text-lg font-medium mb-2">Current Password</label>
                 <input 
                   type="password"
                   value={newPassword.current}
                   onChange={(e) => setNewPassword({...newPassword, current: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm md:text-base"
                   placeholder="Enter current password"
                 />
               </div>
 
               <div>
-                <label className="block text-lg font-medium mb-2">New Password</label>
+                <label className="block text-base md:text-lg font-medium mb-2">New Password</label>
                 <input 
                   type="password"
                   value={newPassword.new}
                   onChange={(e) => setNewPassword({...newPassword, new: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm md:text-base"
                   placeholder="Enter new password"
                 />
               </div>
 
               <div>
-                <label className="block text-lg font-medium mb-2">Confirm New Password</label>
+                <label className="block text-base md:text-lg font-medium mb-2">Confirm New Password</label>
                 <input 
                   type="password"
                   value={newPassword.confirm}
                   onChange={(e) => setNewPassword({...newPassword, confirm: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm md:text-base"
                   placeholder="Confirm new password"
                 />
               </div>
