@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { FileText, Edit, Trash2 } from 'lucide-react';
+import { useOrders } from '../contexts/OrderContext';
 import AdminLayout from '../components/admin/AdminLayout';
 import SearchFilter from '../components/admin/SearchFilter';
 import DataTable from '../components/admin/DataTable';
@@ -12,7 +13,8 @@ import OrderDetailSidebar from '../components/admin/OrderDetailSidebar';
 
 const OrderListPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [orders, setOrders] = useState([]);
+  const { orders, createOrder, updateOrderStatus, deleteOrder } = useOrders();
+  
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'All');
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
@@ -23,11 +25,6 @@ const OrderListPage = () => {
 
   useEffect(() => {
     document.title = 'Order List - Admin Panel | Coffee Shop';
-  }, []);
-
-  useEffect(() => {
-    const savedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-    setOrders(savedOrders);
   }, []);
 
   useEffect(() => {
@@ -68,22 +65,22 @@ const OrderListPage = () => {
 
   const handleUpdateStatus = (newStatus) => {
     if (selectedOrder) {
-      const updatedOrders = orders.map(o => 
-        o.orderId === selectedOrder.orderId ? { ...o, status: newStatus } : o
-      );
-      localStorage.setItem('orders', JSON.stringify(updatedOrders));
-      setOrders(updatedOrders);
+      updateOrderStatus(selectedOrder.orderId, newStatus);
       setSelectedOrder({ ...selectedOrder, status: newStatus });
     }
   };
 
   const handleSaveOrder = (orderData) => {
-    const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-    existingOrders.push(orderData);
-    localStorage.setItem('orders', JSON.stringify(existingOrders));
-    setOrders(existingOrders);
+    createOrder(orderData);
     setIsAddModalOpen(false);
     alert('Order created successfully!');
+  };
+
+  const handleDeleteOrder = (orderId) => {
+    if (window.confirm('Are you sure you want to delete this order?')) {
+      deleteOrder(orderId);
+      alert('Order deleted successfully!');
+    }
   };
 
   const columns = [
@@ -135,7 +132,10 @@ const OrderListPage = () => {
           >
             <Edit className="w-5 h-5" />
           </button>
-          <button className="text-red-500 hover:text-red-600 transition-colors">
+          <button 
+            onClick={() => handleDeleteOrder(order.orderId)}
+            className="text-red-500 hover:text-red-600 transition-colors"
+          >
             <Trash2 className="w-5 h-5" />
           </button>
         </div>
