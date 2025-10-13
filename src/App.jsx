@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import { CartProvider } from './contexts/CartContext';
+import { OrderProvider } from './contexts/OrderContext';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/landing/Footer';
 import LandingPage from './pages/LandingPage';
@@ -83,87 +85,91 @@ function App() {
 
   return (
     <BrowserRouter>
-      {notification && (
-        <Notification message={notification.message} type={notification.type} />
-      )}
-      <div className="flex flex-col min-h-screen">
-        <Layout>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/product" element={<ProductPage />} />
-            <Route path="/product/:id" element={<ProductDetailPage />} />
+      <CartProvider>
+        <OrderProvider>
+          {notification && (
+            <Notification message={notification.message} type={notification.type} />
+          )}
+          <div className="flex flex-col min-h-screen">
+            <Layout>
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/product" element={<ProductPage />} />
+                <Route path="/product/:id" element={<ProductDetailPage />} />
 
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route
-              path="/forgot-password"
-              element={
-                <ForgotPasswordPage onForgotPassword={handleForgotPassword} />
-              }
-            />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route
+                  path="/forgot-password"
+                  element={
+                    <ForgotPasswordPage onForgotPassword={handleForgotPassword} />
+                  }
+                />
 
-            <Route
-              path="/order/:orderId"
-              element={
-                <ProtectedRoute>
-                  <OrderDetailPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/history-order"
-              element={
-                <ProtectedRoute>
-                  <HistoryOrderPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <ProfilePage />
-                </ProtectedRoute>
-              }
-            />
+                <Route
+                  path="/order/:orderId"
+                  element={
+                    <ProtectedRoute>
+                      <OrderDetailPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/history-order"
+                  element={
+                    <ProtectedRoute>
+                      <HistoryOrderPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <ProfilePage />
+                    </ProtectedRoute>
+                  }
+                />
 
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <DashboardPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/products"
-              element={
-                <ProtectedRoute>
-                  <ProductListPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/orders"
-              element={
-                <ProtectedRoute>
-                  <OrderListPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/users"
-              element={
-                <ProtectedRoute>
-                  <UserListPage />
-                </ProtectedRoute>
-              }
-            />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <DashboardPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/products"
+                  element={
+                    <ProtectedRoute>
+                      <ProductListPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/orders"
+                  element={
+                    <ProtectedRoute>
+                      <OrderListPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/users"
+                  element={
+                    <ProtectedRoute>
+                      <UserListPage />
+                    </ProtectedRoute>
+                  }
+                />
 
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Layout>
-      </div>
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Layout>
+          </div>
+        </OrderProvider>
+      </CartProvider>
     </BrowserRouter>
   );
 }
