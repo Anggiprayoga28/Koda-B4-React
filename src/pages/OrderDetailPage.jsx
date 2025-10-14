@@ -70,7 +70,7 @@ const OrderDetailPage = () => {
               <div className="space-y-0">
                 <div className="flex items-center justify-between py-4 border-b border-gray-200">
                   <div className="flex items-center gap-3 text-gray-600">
-                    <img src='/public/icons/Profile.svg' className="w-5 h-5" />
+                    <img src='/public/Profile.svg' className="w-5 h-5" />
                     <span className="text-sm md:text-base">Full Name</span>
                   </div>
                   <p className="font-semibold text-gray-900 text-sm md:text-base">{order.customerInfo.fullName}</p>
@@ -78,7 +78,7 @@ const OrderDetailPage = () => {
 
                 <div className="flex items-center justify-between py-4 border-b border-gray-200">
                   <div className="flex items-center gap-3 text-gray-600">
-                    <img src='/public/icons/Location.svg' className="w-5 h-5" />
+                    <img src='/public/Location.svg' className="w-5 h-5" />
                     <span className="text-sm md:text-base">Address</span>
                   </div>
                   <p className="font-semibold text-gray-900 text-sm md:text-base">{order.customerInfo.address}</p>
@@ -86,7 +86,7 @@ const OrderDetailPage = () => {
 
                 <div className="flex items-center justify-between py-4 border-b border-gray-200">
                   <div className="flex items-center gap-3 text-gray-600">
-                    <img src='/public/icons/PhoneCall.svg' className="w-5 h-5" />
+                    <img src='/public/PhoneCall.svg' className="w-5 h-5" />
                     <span className="text-sm md:text-base">Phone</span>
                   </div>
                   <p className="font-semibold text-gray-900 text-sm md:text-base">082116304338</p>
@@ -94,7 +94,7 @@ const OrderDetailPage = () => {
 
                 <div className="flex items-center justify-between py-4 border-b border-gray-200">
                   <div className="flex items-center gap-3 text-gray-600">
-                    <img src='/public/icons/u_postcard.svg' className="w-5 h-5" />
+                    <img src='/public/u_postcard.svg' className="w-5 h-5" />
                     <span className="text-sm md:text-base">Payment Method</span>
                   </div>
                   <p className="font-semibold text-gray-900 text-sm md:text-base">Cash</p>
@@ -102,7 +102,7 @@ const OrderDetailPage = () => {
 
                 <div className="flex items-center justify-between py-4 border-b border-gray-200">
                   <div className="flex items-center gap-3 text-gray-600">
-                    <img src='/public/icons/truck.svg' className="w-5 h-5" />
+                    <img src='/public/truck.svg' className="w-5 h-5" />
                     <span className="text-sm md:text-base">Shipping</span>
                   </div>
                   <p className="font-semibold text-gray-900 text-sm md:text-base">{order.customerInfo.delivery}</p>
@@ -110,7 +110,7 @@ const OrderDetailPage = () => {
 
                 <div className="flex items-center justify-between py-4">
                   <div className="flex items-center gap-3 text-gray-600">
-                    <img src='/public/icons/u_process.svg' className="w-5 h-5" />
+                    <img src='/public/u_process.svg' className="w-5 h-5" />
                     <span className="text-sm md:text-base">Status</span>
                   </div>
                   <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>

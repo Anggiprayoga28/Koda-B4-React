@@ -285,7 +285,7 @@ const ProductPage = () => {
                       onClick={() => removeFromCart(item.cartId)}
                       className="text-red-500 hover:text-red-700 w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center flex-shrink-0"
                     >
-                      <img src="/public/icons/XCircle.svg" alt="X" className="w-full h-full" />
+                      <img src="/public/XCircle.svg" alt="X" className="w-full h-full" />
                     </button>
                   </div>
                 ))
@@ -305,7 +305,7 @@ const ProductPage = () => {
                         onChange={(e) => setCustomerInfo({...customerInfo, email: e.target.value})}
                         className="w-full px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg pl-10 text-sm sm:text-base"
                       />
-                      <img src='/public/icons/mail.svg' className="w-4 h-4 sm:w-5 sm:h-5 absolute left-3 top-3 sm:top-4 text-gray-400" alt="mail" />
+                      <img src='/public/mail.svg' className="w-4 h-4 sm:w-5 sm:h-5 absolute left-3 top-3 sm:top-4 text-gray-400" alt="mail" />
                     </div>
                   </div>
 
@@ -319,7 +319,7 @@ const ProductPage = () => {
                         onChange={(e) => setCustomerInfo({...customerInfo, fullName: e.target.value})}
                         className="w-full px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg pl-10 text-sm sm:text-base"
                       />
-                      <img src='/public/icons/Profile.svg' className="w-4 h-4 sm:w-5 sm:h-5 absolute left-3 top-3 sm:top-4 text-gray-400" alt="profile" />
+                      <img src='/public/Profile.svg' className="w-4 h-4 sm:w-5 sm:h-5 absolute left-3 top-3 sm:top-4 text-gray-400" alt="profile" />
                     </div>
                   </div>
 
@@ -333,7 +333,7 @@ const ProductPage = () => {
                         onChange={(e) => setCustomerInfo({...customerInfo, address: e.target.value})}
                         className="w-full px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg pl-10 text-sm sm:text-base"
                       />
-                      <img src='/public/icons/Location.svg' className="w-4 h-4 sm:w-5 sm:h-5 absolute left-3 top-3 sm:top-4 text-gray-400" alt="location" />
+                      <img src='/public/Location.svg' className="w-4 h-4 sm:w-5 sm:h-5 absolute left-3 top-3 sm:top-4 text-gray-400" alt="location" />
                     </div>
                   </div>
 
