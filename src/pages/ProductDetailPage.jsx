@@ -156,7 +156,7 @@ const ProductDetailPage = () => {
                 <button className="flex items-center gap-1 text-sm text-orange-500 hover:text-orange-600">
                   <span>Recommendation</span>
                   <span role="img" aria-label="thumbs up">
-                    <img src="/thumbsUp.png" alt="Thumbs Up" className="w-4 h-4" />
+                    <img src="/ThumbsUp.png" alt="Thumbs Up" className="w-4 h-4" />
                   </span>
                 </button>
               </div>
