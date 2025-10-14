@@ -8,7 +8,7 @@ import DataTable from '../components/admin/DataTable';
 import Pagination from '../components/admin/Pagination';
 import ActionButton from '../components/admin/ActionButton';
 import StatusBadge from '../components/admin/StatusBadge';
-import OrderFormModal from '../components/admin/OrderFormModal';
+import OrderFormModal from '../components/admin/OrderFormModals';
 import OrderDetailSidebar from '../components/admin/OrderDetailSidebar';
 
 const OrderListPage = () => {
