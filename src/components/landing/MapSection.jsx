@@ -13,7 +13,7 @@ const MapSection = () => (
       </div>
       <div className="relative h-64 sm:h-80 lg:h-96 bg-white rounded-lg overflow-hidden">
         <img 
-          src="/public/huge.svg" 
+          src="/huge.svg" 
           alt="Map" 
           className="w-full h-full object-cover opacity-50" 
         />

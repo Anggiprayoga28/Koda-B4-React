@@ -37,7 +37,7 @@ const WhatsAppFloating = () => {
           <div className="flex-1 p-4 sm:p-6 bg-gray-50 overflow-y-auto" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width="100" height="100" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M0 0h100v100H0z" fill="%23f9fafb"/%3E%3Cpath d="M20 20h60v60H20z" fill="none" stroke="%23e5e7eb" stroke-width="0.5" opacity="0.3"/%3E%3C/svg%3E")' }}>
             <div className="flex gap-3 mb-4 sm:mb-6">
               <img 
-                src="/public/admin-support.png" 
+                src="/admin-support.png" 
                 alt="Admin" 
                 className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex-shrink-0"
               />
@@ -82,7 +82,7 @@ const WhatsAppFloating = () => {
         onClick={() => setIsOpen(!isOpen)}
         className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 w-14 h-14 sm:w-16 sm:h-16 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-2xl flex items-center justify-center z-40 transition-all transform hover:scale-110"
       >
-        <img src="/public/ChatCircleDots.svg" alt="Logo chat" className="w-7 h-7 sm:w-8 sm:h-8" />
+        <img src="/ChatCircleDots.svg" alt="Logo chat" className="w-7 h-7 sm:w-8 sm:h-8" />
       </button>
     </>
   );

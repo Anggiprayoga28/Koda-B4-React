@@ -101,7 +101,7 @@ const HistoryOrderPage = () => {
                   <option>May 2023</option>
                   <option>June 2023</option>
                 </select>
-                <img src='/public/Calendar.svg' className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                <img src='/Calendar.svg' className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
               </div>
 
               <div className="flex bg-[#E8E8E84D] p-2 shadow-sm overflow-hidden order-2 md:order-1 w-full md:w-auto">
@@ -159,7 +159,7 @@ const HistoryOrderPage = () => {
                           <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-8">
                             <div>
                               <div className="flex items-center gap-2 text-gray-500 text-xs md:text-sm mb-1">
-                                <img src='/public/glass.svg' className="w-4 h-4" />
+                                <img src='/glass.svg' className="w-4 h-4" />
                                 <span>No. Order</span>
                               </div>
                               <div className="font-semibold line-clamp-1 text-sm md:text-base">#{order.orderId}</div>
@@ -173,7 +173,7 @@ const HistoryOrderPage = () => {
 
                             <div>
                               <div className="flex items-center gap-2 text-gray-500 text-xs md:text-sm mb-1">
-                                <img src='/public/Calendar.svg' className="w-4 h-4" />
+                                <img src='/Calendar.svg' className="w-4 h-4" />
                                 <span>Date</span>
                               </div>
                               <div className="font-semibold text-sm md:text-base">{formatDate(order.orderDate)}</div>
@@ -181,7 +181,7 @@ const HistoryOrderPage = () => {
 
                             <div>
                               <div className="flex items-center gap-2 text-gray-500 text-xs md:text-sm mb-1">
-                                <img src='/public/Repeat.svg' className="w-4 h-4" />
+                                <img src='/Repeat.svg' className="w-4 h-4" />
                                 <span>Total</span>
                               </div>
                               <div className="font-semibold text-sm md:text-base">Idr {Math.round(order.total).toLocaleString()}</div>
@@ -189,7 +189,7 @@ const HistoryOrderPage = () => {
 
                             <div>
                               <div className="flex items-center gap-2 text-gray-500 text-xs md:text-sm mb-1">
-                                <img src='/public/u_process.svg' className="w-4 h-4" />
+                                <img src='/u_process.svg' className="w-4 h-4" />
                                 <span>Status</span>
                               </div>
                               <span className={`inline-block px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-medium ${
@@ -220,7 +220,7 @@ const HistoryOrderPage = () => {
             <div className="block lg:hidden mt-8">
               <div className="border border-gray-300 p-6">
                 <div className="flex mb-2">
-                  <img src="/public/messages.svg" alt="messages" className='items-center justify-center w-12 h-12' />
+                  <img src="/messages.svg" alt="messages" className='items-center justify-center w-12 h-12' />
                 </div>
                 
                 <h3 className="text-lg font-semibold text-[#4F5665] mb-2">Send Us Message</h3>
@@ -260,7 +260,7 @@ const HistoryOrderPage = () => {
           <div className="hidden lg:block">
             <div className="border border-gray-300 p-6 sticky w-120 h-60 top-4">
               <div className="flex mb-2">
-                <img src="/public/messages.svg" alt="messages" className='items-center justify-center w-16 h-16' />
+                <img src="/messages.svg" alt="messages" className='items-center justify-center w-16 h-16' />
               </div>
               
               <h3 className="text-xl font-semibold text-[#4F5665] mb-2">Send Us Message</h3>

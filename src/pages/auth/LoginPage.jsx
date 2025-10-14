@@ -78,7 +78,7 @@ const LoginPage = () => {
   return (
     <>
       <div className="hidden md:block">
-        <AuthLayout imageUrl="/public/login-cover.png">
+        <AuthLayout imageUrl="/login-cover.png">
           {notification && (
             <Notification message={notification.message} type={notification.type} />
           )}
@@ -139,7 +139,7 @@ const LoginPage = () => {
         
         <div className="flex-1 flex flex-col p-6">
           <div className="flex items-center gap-2 mb-6">
-            <img src="/public/logo-coklat.svg" alt="Coffee Shop" className="h-10" />
+            <img src="/logo-coklat.svg" alt="Coffee Shop" className="h-10" />
           </div>
 
           <div className="mb-6">

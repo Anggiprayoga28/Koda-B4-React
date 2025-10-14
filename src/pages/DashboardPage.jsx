@@ -42,7 +42,7 @@ const DashboardPage = () => {
         <div className="bg-[#6FC276] rounded-lg p-6 text-white">
           <div className="flex items-start justify-between mb-4">
             <div className="bg-white p-3 rounded-full">
-              <img src='/public/glass-orange.svg' className="w-6 h-6" />
+              <img src='/glass-orange.svg' className="w-6 h-6" />
             </div>
           </div>
           <div className="mb-2">
@@ -57,7 +57,7 @@ const DashboardPage = () => {
         <div className="bg-[#6C69D4] rounded-lg p-6 text-white">
           <div className="flex items-start justify-between mb-4">
             <div className="bg-white p-3 rounded-full">
-              <img src='/public/truck-orange.svg' className="w-6 h-6" />
+              <img src='/truck-orange.svg' className="w-6 h-6" />
             </div>
           </div>
           <div className="mb-2">
@@ -72,7 +72,7 @@ const DashboardPage = () => {
         <div className="bg-[#C56FBC] rounded-lg p-6 text-white shadow-lg">
           <div className="flex items-start justify-between mb-4">
             <div className="bg-white p-3 rounded-full">
-              <img src='/public/user-check.svg' className="w-6 h-6" />
+              <img src='/user-check.svg' className="w-6 h-6" />
             </div>
           </div>
           <div className="mb-2">

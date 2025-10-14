@@ -117,13 +117,13 @@ const ProductListPage = () => {
             }}
             className="text-orange-500 hover:text-orange-600 transition-colors"
           >
-            <img src='/public/edit-admin.svg' className="w-7 h-7" />
+            <img src='/edit-admin.svg' className="w-7 h-7" />
           </button>
           <button 
             onClick={() => handleDeleteProduct(product.id)}
             className="text-red-500 hover:text-red-600 transition-colors"
           >
-            <img src='/public/trash-admin.svg' className="w-7 h-7" />
+            <img src='/trash-admin.svg' className="w-7 h-7" />
           </button>
         </div>
       )

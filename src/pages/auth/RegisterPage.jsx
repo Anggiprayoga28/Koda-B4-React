@@ -93,7 +93,7 @@ const RegisterPage = () => {
     <>
       {/* Desktop/Tablet View */}
       <div className="hidden md:block">
-        <AuthLayout imageUrl="/public/register-cover.png">
+        <AuthLayout imageUrl="/register-cover.png">
           {notification && (
             <Notification message={notification.message} type={notification.type} />
           )}
@@ -167,7 +167,7 @@ const RegisterPage = () => {
         
         <div className="flex-1 flex flex-col p-6">
           <div className="flex items-center gap-2 mb-6">
-            <img src="/public/logo.png" alt="Coffee Shop" className="h-10" />
+            <img src="/logo.png" alt="Coffee Shop" className="h-10" />
           </div>
 
           <div className="mb-6">

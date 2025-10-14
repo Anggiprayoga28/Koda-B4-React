@@ -7,7 +7,7 @@ const TestimonialSection = () => (
       <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center">
         <div className="flex justify-center order-1">
           <img 
-            src="/public/viezh.png" 
+            src="/viezh.png" 
             alt="Customer" 
             className="h-64 sm:h-72 lg:h-80 w-auto object-cover rounded-lg" 
           />

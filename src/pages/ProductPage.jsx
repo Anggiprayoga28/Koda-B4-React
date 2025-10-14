@@ -285,7 +285,7 @@ const ProductPage = () => {
                       onClick={() => removeFromCart(item.cartId)}
                       className="text-red-500 hover:text-red-700 w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center flex-shrink-0"
                     >
-                      <img src="/public/XCircle.svg" alt="X" className="w-full h-full" />
+                      <img src="/XCircle.svg" alt="X" className="w-full h-full" />
                     </button>
                   </div>
                 ))
@@ -305,7 +305,7 @@ const ProductPage = () => {
                         onChange={(e) => setCustomerInfo({...customerInfo, email: e.target.value})}
                         className="w-full px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg pl-10 text-sm sm:text-base"
                       />
-                      <img src='/public/mail.svg' className="w-4 h-4 sm:w-5 sm:h-5 absolute left-3 top-3 sm:top-4 text-gray-400" alt="mail" />
+                      <img src='/mail.svg' className="w-4 h-4 sm:w-5 sm:h-5 absolute left-3 top-3 sm:top-4 text-gray-400" alt="mail" />
                     </div>
                   </div>
 
@@ -319,7 +319,7 @@ const ProductPage = () => {
                         onChange={(e) => setCustomerInfo({...customerInfo, fullName: e.target.value})}
                         className="w-full px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg pl-10 text-sm sm:text-base"
                       />
-                      <img src='/public/Profile.svg' className="w-4 h-4 sm:w-5 sm:h-5 absolute left-3 top-3 sm:top-4 text-gray-400" alt="profile" />
+                      <img src='/Profile.svg' className="w-4 h-4 sm:w-5 sm:h-5 absolute left-3 top-3 sm:top-4 text-gray-400" alt="profile" />
                     </div>
                   </div>
 
@@ -333,7 +333,7 @@ const ProductPage = () => {
                         onChange={(e) => setCustomerInfo({...customerInfo, address: e.target.value})}
                         className="w-full px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg pl-10 text-sm sm:text-base"
                       />
-                      <img src='/public/Location.svg' className="w-4 h-4 sm:w-5 sm:h-5 absolute left-3 top-3 sm:top-4 text-gray-400" alt="location" />
+                      <img src='/Location.svg' className="w-4 h-4 sm:w-5 sm:h-5 absolute left-3 top-3 sm:top-4 text-gray-400" alt="location" />
                     </div>
                   </div>
 
@@ -392,22 +392,22 @@ const ProductPage = () => {
                   <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">We Accept</p>
                   <div className="grid grid-cols-3 gap-2 mb-2 sm:mb-3">
                     <div className="p-1.5 sm:p-2 flex items-center justify-center">
-                      <img src="/public/BRI.svg" alt="BRI" className="h-4 sm:h-5" />
+                      <img src="/BRI.svg" alt="BRI" className="h-4 sm:h-5" />
                     </div>
                     <div className="p-1.5 sm:p-2 flex items-center justify-center">
-                      <img src="/public/dana.svg" alt="DANA" className="h-4 sm:h-5" />
+                      <img src="/dana.svg" alt="DANA" className="h-4 sm:h-5" />
                     </div>
                     <div className="p-1.5 sm:p-2 flex items-center justify-center">
-                      <img src="/public/bca.svg" alt="BCA" className="h-4 sm:h-5" />
+                      <img src="/bca.svg" alt="BCA" className="h-4 sm:h-5" />
                     </div>
                     <div className="p-1.5 sm:p-2 flex items-center justify-center">
-                      <img src="/public/gopay.svg" alt="gopay" className="h-4 sm:h-5" />
+                      <img src="/gopay.svg" alt="gopay" className="h-4 sm:h-5" />
                     </div>
                     <div className="p-1.5 sm:p-2 flex items-center justify-center">
-                      <img src="/public/ovo.svg" alt="OVO" className="h-4 sm:h-5" />
+                      <img src="/ovo.svg" alt="OVO" className="h-4 sm:h-5" />
                     </div>
                     <div className="p-1.5 sm:p-2 flex items-center justify-center">
-                      <img src="/public/paypal.svg" alt="PayPal" className="h-4 sm:h-5" />
+                      <img src="/paypal.svg" alt="PayPal" className="h-4 sm:h-5" />
                     </div>
                   </div>
                   <p className="text-xs text-gray-500">*Get Discount if you pay with Bank Central Asia</p>
@@ -426,7 +426,7 @@ const ProductPage = () => {
         <Notification message={notification.message} type={notification.type} />
       )}
 
-      <div className="relative h-48 sm:h-64 md:h-80 lg:h-96 flex items-center justify-start px-4 sm:px-8 lg:px-16" style={{ backgroundImage: 'url(/public/cover-product.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+      <div className="relative h-48 sm:h-64 md:h-80 lg:h-96 flex items-center justify-start px-4 sm:px-8 lg:px-16" style={{ backgroundImage: 'url(/cover-product.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
         <div className="absolute inset-0 bg-black bg-opacity-20"></div>
         <h1 className="relative text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl max-w-xl leading-tight font-bold">
           We Provide Good Coffee and Healthy Meals
@@ -462,7 +462,7 @@ const ProductPage = () => {
                 {idx % 2 === 0 ? (
                   <>
                     <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 flex items-center justify-center flex-shrink-0">
-                      <img src='/public/mother.svg' className="w-full" alt="promo" />
+                      <img src='/mother.svg' className="w-full" alt="promo" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="text-xs sm:text-sm mb-1 sm:mb-1.5 leading-tight font-semibold">{promo.title}</h3>
@@ -477,7 +477,7 @@ const ProductPage = () => {
                       <p className="text-xs leading-snug line-clamp-2">{promo.description}</p>
                     </div>
                     <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 flex items-center justify-center flex-shrink-0">
-                      <img src='/public/father.png' className="w-full" alt="promo" />
+                      <img src='/father.png' className="w-full" alt="promo" />
                     </div>
                   </>
                 )}

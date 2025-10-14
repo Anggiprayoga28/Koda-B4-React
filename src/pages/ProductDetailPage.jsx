@@ -60,9 +60,9 @@ const ProductDetailPage = () => {
   
   const productImages = [
     product.image,
-    '/public/coffee1.png',
-    '/public/coffee2.png',
-    '/public/coffee3.png'
+    '/coffee1.png',
+    '/coffee2.png',
+    '/coffee3.png'
   ];
 
   const totalPages = Math.ceil(allRecommendations.length / itemsPerPage);
@@ -156,7 +156,7 @@ const ProductDetailPage = () => {
                 <button className="flex items-center gap-1 text-sm text-orange-500 hover:text-orange-600">
                   <span>Recommendation</span>
                   <span role="img" aria-label="thumbs up">
-                    <img src="/public/thumbsUp.png" alt="Thumbs Up" className="w-4 h-4" />
+                    <img src="/thumbsUp.png" alt="Thumbs Up" className="w-4 h-4" />
                   </span>
                 </button>
               </div>

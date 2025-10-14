@@ -143,7 +143,7 @@ const ProfilePage = () => {
                     <img src={profileData.photoUrl} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gray-300">
-                      <img src='/public/Profile.svg' className="w-16 h-16 md:w-20 md:h-20 text-gray-500" />
+                      <img src='/Profile.svg' className="w-16 h-16 md:w-20 md:h-20 text-gray-500" />
                     </div>
                   )}
                 </div>
@@ -184,7 +184,7 @@ const ProfilePage = () => {
                       disabled={!isEditing}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10 disabled:bg-gray-50 disabled:text-gray-600 text-sm md:text-base"
                     />
-                    <img src='/public/Profile.svg' className="w-5 h-5 absolute left-3 top-3.5 text-gray-400" />
+                    <img src='/Profile.svg' className="w-5 h-5 absolute left-3 top-3.5 text-gray-400" />
                   </div>
                 </div>
 
@@ -197,7 +197,7 @@ const ProfilePage = () => {
                       disabled
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10 bg-gray-50 text-gray-600 text-sm md:text-base"
                     />
-                    <img src='/public/mail.svg' className="w-5 h-5 absolute left-3 top-3.5 text-gray-400" />
+                    <img src='/mail.svg' className="w-5 h-5 absolute left-3 top-3.5 text-gray-400" />
                   </div>
                 </div>
 
@@ -211,7 +211,7 @@ const ProfilePage = () => {
                       disabled={!isEditing}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10 disabled:bg-gray-50 disabled:text-gray-600 text-sm md:text-base"
                     />
-                    <img src='/public/PhoneCall.svg' className="w-5 h-5 absolute left-3 top-3.5 text-gray-400" />
+                    <img src='/PhoneCall.svg' className="w-5 h-5 absolute left-3 top-3.5 text-gray-400" />
                   </div>
                 </div>
 
@@ -233,7 +233,7 @@ const ProfilePage = () => {
                       disabled
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10 pr-10 bg-gray-50 text-gray-600 text-sm md:text-base"
                     />
-                    <img src='/public/Password.svg' className="w-5 h-5 absolute left-3 top-3.5 text-gray-400" />
+                    <img src='/Password.svg' className="w-5 h-5 absolute left-3 top-3.5 text-gray-400" />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
@@ -254,7 +254,7 @@ const ProfilePage = () => {
                       disabled={!isEditing}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10 disabled:bg-gray-50 disabled:text-gray-600 text-sm md:text-base"
                     />
-                    <img src='/public/Location.svg' className="w-5 h-5 absolute left-3 top-3.5 text-gray-400" />
+                    <img src='/Location.svg' className="w-5 h-5 absolute left-3 top-3.5 text-gray-400" />
                   </div>
                 </div>
               </div>
