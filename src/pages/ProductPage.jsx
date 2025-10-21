@@ -28,8 +28,8 @@ const ProductPage = () => {
   });
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || '');
   const [priceRange, setPriceRange] = useState([
-    parseInt(searchParams.get('minPrice')) || 5000,
-    parseInt(searchParams.get('maxPrice')) || 50000
+    parseInt(searchParams.get('minPrice')) || 30000,
+    parseInt(searchParams.get('maxPrice')) || 75000
   ]);
   const [promoIndex, setPromoIndex] = useState(0);
   const [showPayment, setShowPayment] = useState(searchParams.get('payment') === 'true');
@@ -99,8 +99,8 @@ const ProductPage = () => {
     if (categories.food) params.food = 'true';
     if (categories.addon) params.addon = 'true';
     if (sortBy) params.sort = sortBy;
-    if (priceRange[0] !== 5000) params.minPrice = priceRange[0].toString();
-    if (priceRange[1] !== 50000) params.maxPrice = priceRange[1].toString();
+    if (priceRange[0] !== 30000) params.minPrice = priceRange[0].toString();
+    if (priceRange[1] !== 75000) params.maxPrice = priceRange[1].toString();
     if (currentPage > 1) params.page = currentPage.toString();
     if (showPayment) params.payment = 'true';
     
@@ -160,7 +160,7 @@ const ProductPage = () => {
     setSearchTerm('');
     setCategories({ favorite: false, coffee: false, nonCoffee: false, food: false, addon: false });
     setSortBy('');
-    setPriceRange([5000, 50000]);
+    setPriceRange([30000, 75000]);
     setCurrentPage(1);
     setSearchParams({});
   };
@@ -248,7 +248,7 @@ const ProductPage = () => {
                 <h2 className="text-xl sm:text-2xl font-semibold">Your Order</h2>
                 <button 
                   onClick={handleBackToProduct}
-                  className="bg-[#FF8906] text-[#0B132A] px-4 sm:px-6 py-2 rounded-lg hover:bg-orange-600 flex items-center gap-2 text-sm sm:text-base"
+                  className="bg-[#6B727C] text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-[#A5A58D] flex items-center gap-2 text-sm sm:text-base"
                 >
                   + Add Menu
                 </button>
@@ -259,7 +259,7 @@ const ProductPage = () => {
                   <p className="text-gray-500 mb-4">Your cart is empty</p>
                   <button 
                     onClick={handleBackToProduct}
-                    className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600"
+                    className="bg-[#6B727C] text-white px-6 py-2 rounded-lg hover:bg-[#A5A58D]"
                   >
                     Browse Products
                   </button>
@@ -278,7 +278,7 @@ const ProductPage = () => {
                       </p>
                       <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                         <span className="text-red-600 line-through text-xs sm:text-sm">IDR {item.originalPrice.toLocaleString()}</span>
-                        <span className="text-[#FF8906] text-lg sm:text-xl font-semibold">IDR {item.price.toLocaleString()}</span>
+                        <span className="text-[#6B727C] text-lg sm:text-xl font-semibold">IDR {item.price.toLocaleString()}</span>
                       </div>
                     </div>
                     <button 
@@ -346,7 +346,7 @@ const ProductPage = () => {
                           onClick={() => setCustomerInfo({...customerInfo, delivery: method})}
                           className={`border-2 px-2 sm:px-4 py-2 sm:py-3 rounded-lg font-medium text-xs sm:text-base ${
                             customerInfo.delivery === method 
-                              ? 'border-[#FF8906] bg-white text-[#0B0909]'
+                              ? 'border-[#6B727C] bg-white text-[#0B0909]'
                               : 'border-gray-300 hover:border-gray-400'
                           }`}
                         >
@@ -383,7 +383,7 @@ const ProductPage = () => {
 
                 <button 
                   onClick={handleCheckout}
-                  className="w-full bg-[#FF8906] text-[#0B0909] py-2.5 sm:py-3 rounded-lg hover:bg-orange-600 transition mb-4 sm:mb-6 text-sm sm:text-base font-semibold"
+                  className="w-full bg-[#6B727C] text-white py-2.5 sm:py-3 rounded-lg hover:bg-[#A5A58D] transition mb-4 sm:mb-6 text-sm sm:text-base font-semibold"
                 >
                   Checkout
                 </button>
@@ -442,7 +442,7 @@ const ProductPage = () => {
             <button onClick={prevPromo} className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition">
               <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-gray-600" />
             </button>
-            <button onClick={nextPromo} className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-orange-500 rounded-full flex items-center justify-center hover:bg-orange-600 transition text-white">
+            <button onClick={nextPromo} className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-orange-500 rounded-full flex items-center justify-center hover:bg-[#A5A58D] transition text-white">
               <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
             </button>
           </div>
@@ -535,7 +535,7 @@ const ProductPage = () => {
           </div>
           <button 
             onClick={() => setShowFilter(!showFilter)}
-            className="bg-orange-500 text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg hover:bg-orange-600 transition flex items-center gap-2"
+            className="bg-orange-500 text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg hover:bg-[#A5A58D] transition flex items-center gap-2"
           >
             <SlidersHorizontal className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
@@ -595,7 +595,7 @@ const ProductPage = () => {
             </div>
             <div className="mb-6">
               <label className="block text-sm mb-3">Range Price</label>
-              <input type="range" min="5000" max="50000" value={priceRange[1]} onChange={(e) => setPriceRange([5000, parseInt(e.target.value)])} className="w-full accent-orange-500" />
+              <input type="range" min="30000" max="75000" value={priceRange[1]} onChange={(e) => setPriceRange([30000, parseInt(e.target.value)])} className="w-full accent-orange-500" />
               <div className="flex justify-between text-xs mt-2">
                 <span>IDR {priceRange[0].toLocaleString()}</span>
                 <span>IDR {priceRange[1].toLocaleString()}</span>
@@ -666,7 +666,7 @@ const ProductPage = () => {
 
                   <div className="mb-6">
                     <label className="block text-sm font-medium mb-3">Range Price</label>
-                    <input type="range" min="5000" max="50000" value={priceRange[1]} onChange={(e) => setPriceRange([5000, parseInt(e.target.value)])} className="w-full accent-orange-500" />
+                    <input type="range" min="30000" max="75000" value={priceRange[1]} onChange={(e) => setPriceRange([30000, parseInt(e.target.value)])} className="w-full accent-orange-500" />
                     <div className="flex justify-between text-xs mt-2">
                       <span>IDR {priceRange[0].toLocaleString()}</span>
                       <span>IDR {priceRange[1].toLocaleString()}</span>
@@ -682,7 +682,7 @@ const ProductPage = () => {
                     </button>
                     <button 
                       onClick={() => setShowFilter(false)}
-                      className="flex-1 bg-orange-500 text-white px-4 py-3 rounded-lg hover:bg-orange-600 transition font-semibold"
+                      className="flex-1 bg-orange-500 text-white px-4 py-3 rounded-lg hover:bg-[#A5A58D] transition font-semibold"
                     >
                       Apply Filter
                     </button>
