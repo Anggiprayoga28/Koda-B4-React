@@ -34,12 +34,12 @@ const MenuCard = ({ title, originalPrice, price, description, image, isFlashSale
             <span className="text-xs sm:text-sm text-red-600 line-through mb-2">
               IDR {originalPrice}
             </span>
-            <span className="text-base sm:text-lg text-[#FF8906] mb-2">
+            <span className="text-base sm:text-lg text-[#C5A053] mb-2">
               IDR {price}
             </span>
           </div>
           <div className="flex justify-between gap-2">
-            <button className="w-full bg-[#FF8906] hover:bg-[#e67a05] text-black font-medium px-3 sm:px-4 py-2 rounded-md transition-colors text-sm sm:text-base">
+            <button className="w-full bg-[#6B727C] hover:bg-gray-500 text-white font-medium px-3 sm:px-4 py-2 rounded-md transition-colors text-sm sm:text-base">
               Buy
             </button>
             <button className="border border-[#FF8906] p-2 rounded-md hover:bg-[#FFF3E0] transition-colors">

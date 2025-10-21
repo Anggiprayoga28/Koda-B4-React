@@ -13,7 +13,7 @@ const Button = ({ children, onClick, variant = 'primary', type = 'button', fullW
   const widthStyle = fullWidth ? "w-full" : "";
   
   const variants = {
-    primary: "bg-[#FF8906] text-black hover:from-orange-600 hover:to-orange-700",
+    primary: "bg-[#6B727C] text-black hover:from-orange-600 hover:to-orange-700",
     secondary: "bg-gray-200 text-gray-700 hover:bg-gray-300",
     danger: "bg-red-500 text-white hover:bg-red-600",
     link: "text-orange-500 hover:text-orange-600 font-medium"
