@@ -2,11 +2,7 @@ import React from 'react';
 
 const Logo = () => (
   <div className="flex items-center justify-center">
-    <img 
-      src="/logo-coklat.svg" 
-      alt="Logo Coffee Shop" 
-      className="h-9 w-auto object-contain"
-    />
+    <span className='text-[#C5A053] text-2xl'>Harlan + Holden</span>
   </div>
 );
 
