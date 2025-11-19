@@ -1,0 +1,56 @@
+name: Build and Deploy Coffee Shop Frontend
+run-name: Building and Deploying Coffee Shop Frontend
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read
+  packages: write
+            
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/coffee-shop-frontend:latest
+            ghcr.io/${{ github.repository_owner }}/coffee-shop-frontend:${{ github.ref_name }}
+          build-args: |
+            VITE_BASE_URL=${{ secrets.VITE_BASE_URL }}
+
+  deploy:
+    needs: build-and-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute remote SSH commands using SSH key
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            docker pull ghcr.io/${{ github.repository_owner }}/coffee-shop-frontend:latest
+            cd ~/server
+            docker compose pull
+            docker compose up app -d
+            docker system prune -a --volumes -f
