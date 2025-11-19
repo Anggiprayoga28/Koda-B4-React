@@ -8,82 +8,88 @@ import {
   logout as logoutAction,
 } from './authSlice';
 
-/**
- * @param {Object} formData - Login form data
- * @returns {Function} Thunk function
- */
-export const login = (formData) => (dispatch) => {
+const API_BASE_URL = import.meta.env.VITE_BASE_URL;
+
+export const login = (formData) => async (dispatch) => {
   dispatch(loginStart());
 
   try {
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const foundUser = users.find(
-      (u) => u.email === formData.email && u.password === formData.password
-    );
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: formData.email,
+        password: formData.password,
+      }),
+    });
 
-    if (foundUser) {
+    const data = await response.json();
+
+    if (data.success && data.data) {
       const userSession = {
-        id: foundUser.id,
-        fullName: foundUser.fullName,
-        email: foundUser.email,
-        photoUrl: foundUser.photoUrl,
+        id: data.data.user_id,
+        fullName: data.data.full_name,
+        email: data.data.email,
+        photoUrl: data.data.photo_url || null,
+        token: data.data.token,
       };
 
+      localStorage.setItem('token', data.data.token);
       localStorage.setItem('currentUser', JSON.stringify(userSession));
+      
       dispatch(loginSuccess(userSession));
       return { success: true };
     } else {
-      const errorMsg = 'Invalid email or password';
+      const errorMsg = data.message || 'Invalid email or password';
       dispatch(loginFailure(errorMsg));
       return { success: false, error: errorMsg };
     }
   } catch (error) {
-    const errorMsg = 'An error occurred during login';
+    console.error('Login error:', error);
+    const errorMsg = 'Network error. Please check your connection.';
     dispatch(loginFailure(errorMsg));
     return { success: false, error: errorMsg };
   }
 };
 
-/**
- * @param {Object} formData - Registration form data
- * @returns {Function} Thunk function
- */
-export const register = (formData) => (dispatch) => {
+export const register = (formData) => async (dispatch) => {
   dispatch(registerStart());
 
   try {
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const existingUser = users.find((u) => u.email === formData.email);
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        full_name: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+      }),
+    });
 
-    if (existingUser) {
-      const errorMsg = 'Email already exists';
+    const data = await response.json();
+
+    if (data.success) {
+      dispatch(registerSuccess());
+      return { success: true, message: data.message };
+    } else {
+      const errorMsg = data.message || 'Registration failed';
       dispatch(registerFailure(errorMsg));
       return { success: false, error: errorMsg };
     }
-
-    const newUser = {
-      id: Date.now(),
-      fullName: formData.fullName,
-      email: formData.email,
-      password: formData.password,
-      createdAt: new Date().toISOString(),
-    };
-
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
-    dispatch(registerSuccess());
-    return { success: true };
   } catch (error) {
-    const errorMsg = 'An error occurred during registration';
+    console.error('Registration error:', error);
+    const errorMsg = 'Network error. Please check your connection.';
     dispatch(registerFailure(errorMsg));
     return { success: false, error: errorMsg };
   }
 };
 
-/**
- * @returns {Function} Thunk function
- */
 export const logout = () => (dispatch) => {
+  localStorage.removeItem('token');
   localStorage.removeItem('currentUser');
   dispatch(logoutAction());
 };
