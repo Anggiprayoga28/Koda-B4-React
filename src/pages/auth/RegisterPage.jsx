@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
 import { User, Mail, Lock } from 'lucide-react';
 import AuthLayout from '../../components/layout/AuthLayout';
 import PageHeader from '../../components/layout/PageHeader';
@@ -10,13 +9,9 @@ import Button from '../../components/ui/Button';
 import LinkText from '../../components/layout/LinkText';
 import SocialButtons from '../../components/ui/SocialButtons';
 import Notification from '../../components/ui/Notification';
-import { register } from '../../redux/authActions';
-import { clearError } from '../../redux/authSlice';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { loading, error } = useSelector((state) => state.auth);
   
   const [formData, setFormData] = useState({
     fullName: '',
@@ -26,6 +21,7 @@ const RegisterPage = () => {
   });
   const [errors, setErrors] = useState({});
   const [notification, setNotification] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     document.title = 'Register - Coffee Shop';
@@ -44,7 +40,6 @@ const RegisterPage = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
-    if (error) dispatch(clearError());
   };
 
   const validateForm = () => {
@@ -71,18 +66,45 @@ const RegisterPage = () => {
     const newErrors = validateForm();
     
     if (Object.keys(newErrors).length === 0) {
-      const result = await dispatch(register(formData));
+      setLoading(true);
       
-      if (result.success) {
-        setNotification({ 
-          message: 'Registration successful! Please login.', 
-          type: 'success' 
+      try {
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            full_name: formData.fullName,
+            email: formData.email,
+            password: formData.password,
+          }),
         });
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000);
-      } else {
-        setNotification({ message: result.error, type: 'error' });
+
+        const data = await response.json();
+
+        if (data.success) {
+          setNotification({ 
+            message: data.message || 'Registration successful! Please login.', 
+            type: 'success' 
+          });
+          setTimeout(() => {
+            navigate('/login', { state: { message: data.message } });
+          }, 2000);
+        } else {
+          setNotification({ 
+            message: data.message || 'Registration failed. Please try again.', 
+            type: 'error' 
+          });
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
+        setNotification({ 
+          message: 'Network error. Please check your connection.', 
+          type: 'error' 
+        });
+      } finally {
+        setLoading(false);
       }
     } else {
       setErrors(newErrors);
