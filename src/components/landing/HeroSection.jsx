@@ -35,7 +35,7 @@ const HeroSection = () => (
 
     <div className="w-full lg:w-1/2 relative h-64 sm:h-80 md:h-96 lg:h-auto order-1 lg:order-2">
       <img 
-        src="/coffe-landing.png" 
+        src="/harlan.png" 
         alt="Coffee cups with different stages" 
         className="w-full h-full object-cover" 
       />
