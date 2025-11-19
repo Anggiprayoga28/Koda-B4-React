@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
 import { User, Mail, Lock } from 'lucide-react';
 import AuthLayout from '../../components/layout/AuthLayout';
 import PageHeader from '../../components/layout/PageHeader';
@@ -10,11 +9,9 @@ import Button from '../../components/ui/Button';
 import LinkText from '../../components/layout/LinkText';
 import SocialButtons from '../../components/ui/SocialButtons';
 import Notification from '../../components/ui/Notification';
-import { register } from '../../redux/authActions';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   
   const [formData, setFormData] = useState({
     fullName: '',
@@ -71,24 +68,45 @@ const RegisterPage = () => {
     if (Object.keys(newErrors).length === 0) {
       setLoading(true);
       
-      const result = await dispatch(register(formData));
-      
-      if (result.success) {
-        setNotification({ 
-          message: result.message || 'Registration successful! Please login.', 
-          type: 'success' 
+      try {
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            full_name: formData.fullName,
+            email: formData.email,
+            password: formData.password,
+          }),
         });
-        setTimeout(() => {
-          navigate('/login', { state: { message: result.message } });
-        }, 2000);
-      } else {
+
+        const data = await response.json();
+
+        if (data.success) {
+          setNotification({ 
+            message: data.message || 'Registration successful!', 
+            type: 'success' 
+          });
+          
+          setTimeout(() => {
+            navigate('/login', { state: { message: data.message } });
+          }, 1500);
+        } else {
+          setNotification({ 
+            message: data.message || 'Registration failed. Please try again.', 
+            type: 'error' 
+          });
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
         setNotification({ 
-          message: result.error, 
+          message: 'Network error. Please check your connection.', 
           type: 'error' 
         });
+      } finally {
+        setLoading(false);
       }
-      
-      setLoading(false);
     } else {
       setErrors(newErrors);
     }
