@@ -41,7 +41,7 @@ const AboutSection = () => (
         </div>
         <div className="relative w-full order-1 md:order-2">
           <img 
-            src="/barista.png" 
+            src="/about.png" 
             alt="Barista"
             className="w-full h-auto rounded-lg"
           />
