@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
 import { Mail, Lock } from 'lucide-react';
 import AuthLayout from '../../components/layout/AuthLayout';
 import PageHeader from '../../components/layout/PageHeader';
@@ -10,18 +9,15 @@ import Button from '../../components/ui/Button';
 import LinkText from '../../components/layout/LinkText';
 import SocialButtons from '../../components/ui/SocialButtons';
 import Notification from '../../components/ui/Notification';
-import { login } from '../../redux/authActions';
-import { clearError } from '../../redux/authSlice';
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const dispatch = useDispatch();
-  const { loading, error, isAuthenticated } = useSelector((state) => state.auth);
   
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
   const [notification, setNotification] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     document.title = 'Login - Coffee Shop';
@@ -36,12 +32,6 @@ const LoginPage = () => {
   }, [location]);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard');
-    }
-  }, [isAuthenticated, navigate]);
-
-  useEffect(() => {
     if (notification) {
       const timer = setTimeout(() => {
         setNotification(null);
@@ -54,7 +44,6 @@ const LoginPage = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
-    if (error) dispatch(clearError());
   };
 
   const validateForm = () => {
@@ -69,15 +58,53 @@ const LoginPage = () => {
     const newErrors = validateForm();
     
     if (Object.keys(newErrors).length === 0) {
-      const result = await dispatch(login(formData));
+      setLoading(true);
       
-      if (result.success) {
-        setNotification({ message: 'Login successful!', type: 'success' });
-        setTimeout(() => {
-          navigate('/');
-        }, 1000);
-      } else {
-        setNotification({ message: result.error, type: 'error' });
+      try {
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.data) {
+          const userSession = {
+            id: data.data.user_id,
+            fullName: data.data.full_name,
+            email: data.data.email,
+            photoUrl: data.data.photo_url || null,
+            token: data.data.token,
+          };
+
+          localStorage.setItem('token', data.data.token);
+          localStorage.setItem('currentUser', JSON.stringify(userSession));
+
+          setNotification({ message: 'Login successful!', type: 'success' });
+          
+          setTimeout(() => {
+            navigate('/');
+          }, 1000);
+        } else {
+          setNotification({ 
+            message: data.message || 'Invalid email or password', 
+            type: 'error' 
+          });
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        setNotification({ 
+          message: 'Network error. Please check your connection.', 
+          type: 'error' 
+        });
+      } finally {
+        setLoading(false);
       }
     } else {
       setErrors(newErrors);
