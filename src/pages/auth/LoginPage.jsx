@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Mail, Lock } from 'lucide-react';
 import AuthLayout from '../../components/layout/AuthLayout';
@@ -15,6 +15,7 @@ import { clearError } from '../../redux/authSlice';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const { loading, error, isAuthenticated } = useSelector((state) => state.auth);
   
@@ -24,7 +25,15 @@ const LoginPage = () => {
 
   useEffect(() => {
     document.title = 'Login - Coffee Shop';
-  }, []);
+    
+    if (location.state?.message) {
+      setNotification({ 
+        message: location.state.message, 
+        type: 'success' 
+      });
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   useEffect(() => {
     if (isAuthenticated) {
