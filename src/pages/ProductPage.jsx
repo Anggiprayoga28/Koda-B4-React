@@ -9,7 +9,7 @@ import Pagination from '../components/admin/Pagination';
 import Notification from '../components/ui/Notification';
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const ProductPage = () => {
   const navigate = useNavigate();

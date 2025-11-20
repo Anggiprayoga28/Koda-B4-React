@@ -9,7 +9,7 @@ import ProductFormModal from '../components/admin/ProductFormModal';
 import { getProducts } from '../services/apiService';
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const ProductListPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();

@@ -6,7 +6,7 @@ import axios from 'axios';
 import MenuCard from '../components/landing/MenuCard';
 import Pagination from '../components/admin/Pagination';
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const ProductDetailPage = () => {
   const { id } = useParams();
