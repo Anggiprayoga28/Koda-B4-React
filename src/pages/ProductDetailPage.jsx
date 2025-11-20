@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Minus, Plus, ShoppingCart, Star } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, Star, AlertCircle } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
-import { getProducts, getProductById } from '../services/apiService';
+import axios from 'axios';
 import MenuCard from '../components/landing/MenuCard';
 import Pagination from '../components/admin/Pagination';
+
+const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:8080';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -18,52 +20,104 @@ const ProductDetailPage = () => {
   const [selectedTemp, setSelectedTemp] = useState('Ice');
   const [currentImage, setCurrentImage] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
   const itemsPerPage = 3;
 
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchProductData = async () => {
+      if (!isMounted) return;
+      
+      setLoading(true);
+      setError(null);
+      
       try {
-        const [productData, allProducts] = await Promise.all([
-          getProductById(id),
-          getProducts()
-        ]);
-        setProduct(productData);
-        setAllRecommendations(allProducts.filter(p => p.id !== parseInt(id)));
+        const productResponse = await axios.get(`${API_BASE_URL}/products/${id}`);
+        
+        if (!productResponse.data.success || !productResponse.data.data) {
+          throw new Error('Product not found');
+        }
+        
+        if (isMounted) {
+          const productData = productResponse.data.data;
+          setProduct(productData);
+        }
+        
+        const allProductsResponse = await axios.get(`${API_BASE_URL}/products`, {
+          params: { limit: 1000 }
+        });
+        
+        if (allProductsResponse.data.success && allProductsResponse.data.data && isMounted) {
+          let recommendations = allProductsResponse.data.data.filter(p => p.id !== parseInt(id));
+          
+          const productData = productResponse.data.data;
+          if (productData.category_id) {
+            const sameCategory = recommendations.filter(p => p.category_id === productData.category_id);
+            const otherCategory = recommendations.filter(p => p.category_id !== productData.category_id);
+            recommendations = [...sameCategory, ...otherCategory];
+          }
+          
+          setAllRecommendations(recommendations);
+        }
+        
       } catch (err) {
         console.error('Error fetching product:', err);
+        if (isMounted) {
+          setError(err.message || 'Failed to load product');
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchProductData();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   useEffect(() => {
     if (product) {
       document.title = `${product.name} - Coffee Shop`;
     }
+    
+    return () => {
+      document.title = 'Coffee Shop';
+    };
   }, [product]);
 
   useEffect(() => {
     setCurrentPage(1);
-    window.scrollTo(0, 0);
+    setQuantity(1);
+    setSelectedSize('Regular');
+    setSelectedTemp('Ice');
+    setCurrentImage(0);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [id]);
 
-  if (!product) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-500">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  const productImages = [
-    product.image,
-    '/coffee1.png',
-    '/coffee2.png',
-    '/coffee3.png'
-  ];
+  const productImages = useMemo(() => {
+    if (!product) return ['/placeholder.png'];
+    
+    const images = [];
+    
+    if (product.image_url || product.image) {
+      images.push(product.image_url || product.image);
+    } else {
+      images.push('/placeholder.png');
+    }
+    
+    while (images.length < 4) {
+      images.push(`/coffee${images.length}.png`);
+    }
+    
+    return images;
+  }, [product?.image_url, product?.image]);
 
   const totalPages = Math.ceil(allRecommendations.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -71,52 +125,111 @@ const ProductDetailPage = () => {
   const currentRecommendations = allRecommendations.slice(indexOfFirstItem, indexOfLastItem);
 
   const handleQuantityChange = (delta) => {
-    setQuantity(Math.max(1, quantity + delta));
+    setQuantity(prev => Math.max(1, prev + delta));
   };
 
   const handleBuyNow = () => {
-    addToCart(product, quantity, selectedSize, selectedTemp);
-    navigate('/product?payment=true');
+    if (!product) return;
+    
+    try {
+      addToCart(product, quantity, selectedSize, selectedTemp);
+      navigate('/product?payment=true');
+    } catch (err) {
+      console.error('Error adding to cart:', err);
+      alert('Failed to add product to cart');
+    }
   };
 
   const handleAddToCart = () => {
-    addToCart(product, quantity, selectedSize, selectedTemp);
-    navigate('/product?payment=true');
+    if (!product) return;
+    
+    try {
+      addToCart(product, quantity, selectedSize, selectedTemp);
+      navigate('/product?payment=true');
+    } catch (err) {
+      console.error('Error adding to cart:', err);
+      alert('Failed to add product to cart');
+    }
   };
 
   const handleRecommendationClick = (productId) => {
     navigate(`/product/${productId}`);
   };
 
+  const formatPrice = (price) => {
+    return typeof price === 'number' ? price.toLocaleString('id-ID') : price;
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-500">Loading product...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Product Not Found</h2>
+          <p className="text-gray-600 mb-6">
+            {error || 'The product you are looking for does not exist or has been removed.'}
+          </p>
+          <button
+            onClick={() => navigate('/product')}
+            className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg transition-colors"
+          >
+            Back to Products
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const discountPercentage = product.originalPrice && product.originalPrice > product.price
+    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    : 0;
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="overflow-hidden mb-12">
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-12">
           <div className="grid md:grid-cols-2 gap-8 p-6 lg:p-10">
             <div>
-              <div className="mb-4 overflow-hidden bg-gray-100">
+              <div className="mb-4 overflow-hidden bg-gray-100 rounded-lg">
                 <img
                   src={productImages[currentImage]}
                   alt={product.name}
                   className="w-full h-96 object-cover"
+                  onError={(e) => {
+                    e.target.src = '/placeholder.png';
+                  }}
                 />
               </div>
 
               <div className="grid grid-cols-4 gap-2">
                 {productImages.map((img, index) => (
                   <button
-                    key={index}
+                    key={`img-${index}`}
                     onClick={() => setCurrentImage(index)}
-                    className={`overflow-hidden transition-all ${
+                    className={`overflow-hidden rounded-lg transition-all ${
                       currentImage === index 
-                        ? 'border-2 border-[#FF8906]' 
-                        : 'border-2 border-transparent hover:border-gray-300'
+                        ? 'ring-2 ring-[#FF8906]' 
+                        : 'ring-2 ring-transparent hover:ring-gray-300'
                     }`}
                   >
                     <img
                       src={img}
                       alt={`${product.name} ${index + 1}`}
-                      className="w-full h-40 object-cover"
+                      className="w-full h-20 object-cover"
+                      onError={(e) => {
+                        e.target.src = '/placeholder.png';
+                      }}
                     />
                   </button>
                 ))}
@@ -124,45 +237,69 @@ const ProductDetailPage = () => {
             </div>
 
             <div>
-              {product.isFlashSale && (
-                <span className="inline-block bg-red-600 text-white px-3 py-1 text-xs rounded-full mb-2">
-                  FLASH SALE!
+              {(product.isFlashSale || product.is_flash_sale) && (
+                <span className="inline-block bg-red-600 text-white px-3 py-1 text-xs font-semibold rounded-full mb-2">
+                  FLASH SALE {discountPercentage > 0 && `${discountPercentage}%`}
                 </span>
               )}
               
-              <h1 className="text-3xl lg:text-4xl text-gray-900 mb-3">
+              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
                 {product.name}
               </h1>
 
-              <div className="flex items-baseline gap-3 mb-3">
-                <span className="text-sm text-red-600 line-through">
-                  IDR {product.originalPrice.toLocaleString()}
+              {product.category && (
+                <span className="inline-block bg-orange-100 text-orange-700 px-3 py-1 text-sm rounded-full mb-3">
+                  {product.category}
                 </span>
-                <span className="text-2xl text-orange-500">
-                  IDR {product.price.toLocaleString()}
+              )}
+
+              <div className="flex items-baseline gap-3 mb-3">
+                {product.originalPrice && product.originalPrice > product.price && (
+                  <span className="text-sm text-gray-400 line-through">
+                    IDR {formatPrice(product.originalPrice || product.original_price)}
+                  </span>
+                )}
+                <span className="text-3xl font-bold text-orange-500">
+                  IDR {formatPrice(product.price)}
                 </span>
               </div>
 
               <div className="flex items-center gap-2 mb-4">
                 <div className="flex items-center gap-1">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-orange-400 text-orange-400" />
+                    <Star 
+                      key={`star-${i}`}
+                      className={`w-4 h-4 ${
+                        i < Math.floor(product.rating || 5) 
+                          ? 'fill-orange-400 text-orange-400' 
+                          : 'fill-gray-200 text-gray-200'
+                      }`} 
+                    />
                   ))}
-                  <span className="ml-1 text-sm font-medium">{product.rating}</span>
+                  <span className="ml-1 text-sm font-medium">
+                    {product.rating || '5.0'}
+                  </span>
                 </div>
                 <span className="text-gray-400">|</span>
-                <span className="text-sm text-gray-600">200+ Review</span>
-                <span className="text-gray-400">|</span>
-                <button className="flex items-center gap-1 text-sm text-orange-500 hover:text-orange-600">
-                  <span>Recommendation</span>
-                  <span role="img" aria-label="thumbs up">
-                    <img src="/ThumbsUp.png" alt="Thumbs Up" className="w-4 h-4" />
-                  </span>
-                </button>
+                <span className="text-sm text-gray-600">
+                  {product.reviewCount || product.review_count || '200+'} Review
+                </span>
               </div>
 
+              {product.stock !== undefined && (
+                <div className="mb-4">
+                  <span className={`text-sm font-medium ${
+                    product.stock > 10 ? 'text-green-600' : 
+                    product.stock > 0 ? 'text-orange-600' : 
+                    'text-red-600'
+                  }`}>
+                    {product.stock > 0 ? `Stock: ${product.stock} available` : 'Out of Stock'}
+                  </span>
+                </div>
+              )}
+
               <p className="text-sm text-gray-600 mb-6 leading-relaxed">
-                {product.description}
+                {product.description || 'Delicious coffee made with premium ingredients.'}
               </p>
 
               <div className="mb-4">
@@ -172,14 +309,16 @@ const ProductDetailPage = () => {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => handleQuantityChange(-1)}
-                    className="w-9 h-9 border-2 border-[#FF8906] text-[#0B0909] flex items-center justify-center hover:bg-orange-50 transition-colors"
+                    disabled={quantity <= 1}
+                    className="w-9 h-9 border-2 border-[#FF8906] text-[#0B0909] flex items-center justify-center hover:bg-orange-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded"
                   >
                     <Minus className="w-4 h-4" />
                   </button>
                   <span className="text-lg w-10 text-center font-medium">{quantity}</span>
                   <button
                     onClick={() => handleQuantityChange(1)}
-                    className="w-9 h-9 bg-[#FF8906] text-[#0B0909] flex items-center justify-center hover:bg-orange-500 transition-colors"
+                    disabled={product.stock && quantity >= product.stock}
+                    className="w-9 h-9 bg-[#FF8906] text-[#0B0909] flex items-center justify-center hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
@@ -195,10 +334,10 @@ const ProductDetailPage = () => {
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      className={`py-2 px-4 text-sm font-medium transition-colors ${
+                      className={`py-2 px-4 text-sm font-medium rounded transition-colors ${
                         selectedSize === size
-                          ? 'bg-white border-2 border-[#FF8906] text-[#0B0909]'
-                          : 'border-2 border-gray-300 text-gray-700 hover:border-orange-300'
+                          ? 'bg-white ring-2 ring-[#FF8906] text-[#0B0909]'
+                          : 'bg-white ring-2 ring-gray-300 text-gray-700 hover:ring-orange-300'
                       }`}
                     >
                       {size}
@@ -216,10 +355,10 @@ const ProductDetailPage = () => {
                     <button
                       key={temp}
                       onClick={() => setSelectedTemp(temp)}
-                      className={`py-2 px-4 text-sm font-medium transition-colors ${
+                      className={`py-2 px-4 text-sm font-medium rounded transition-colors ${
                         selectedTemp === temp
-                          ? 'border-2 border-[#FF8906] text-[#0B0909]'
-                          : 'border-2 border-gray-300 text-gray-700 hover:border-orange-300'
+                          ? 'ring-2 ring-[#FF8906] text-[#0B0909]'
+                          : 'ring-2 ring-gray-300 text-gray-700 hover:ring-orange-300'
                       }`}
                     >
                       {temp}
@@ -228,19 +367,21 @@ const ProductDetailPage = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <button 
                   onClick={handleBuyNow}
-                  className="flex-1 bg-[#FF8906] hover:bg-orange-600 text-black py-2.5 font-medium transition-colors"
+                  disabled={product.stock === 0}
+                  className="flex-1 bg-[#FF8906] hover:bg-orange-600 text-black py-3 font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Buy
+                  Buy Now
                 </button>
                 <button 
                   onClick={handleAddToCart}
-                  className="border-2 border-orange-500 text-orange-500 hover:bg-orange-50 py-2.5 font-medium transition-colors flex items-center justify-center gap-2"
+                  disabled={product.stock === 0}
+                  className="ring-2 ring-orange-500 text-orange-500 hover:bg-orange-50 py-3 font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ShoppingCart className="w-5 h-5" />
-                  <span>add to cart</span>
+                  <span>Add to Cart</span>
                 </button>
               </div>
             </div>
@@ -248,25 +389,25 @@ const ProductDetailPage = () => {
         </div>
 
         <div className="mb-12">
-          <h2 className="text-3xl text-gray-900 mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8">
             Recommendation <span className="text-gray-500">For You</span>
           </h2>
           
           {currentRecommendations.length > 0 ? (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 {currentRecommendations.map((item) => (
                   <div 
                     key={item.id}
                     onClick={() => handleRecommendationClick(item.id)}
-                    className="cursor-pointer"
+                    className="cursor-pointer transform hover:scale-105 transition-transform"
                   >
                     <MenuCard
                       title={item.name}
-                      price={item.price.toLocaleString()}
+                      price={formatPrice(item.price)}
                       description={item.description}
-                      image={item.image}
-                      isFlashSale={item.isFlashSale === true}
+                      image={item.image_url || item.image}
+                      isFlashSale={item.isFlashSale || item.is_flash_sale}
                     />
                   </div>
                 ))}
@@ -283,8 +424,8 @@ const ProductDetailPage = () => {
               )}
             </>
           ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-500">No recommendations available</p>
+            <div className="text-center py-12 bg-white rounded-lg">
+              <p className="text-gray-500">No recommendations available at the moment</p>
             </div>
           )}
         </div>
