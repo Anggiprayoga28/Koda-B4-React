@@ -69,16 +69,15 @@ const RegisterPage = () => {
       setLoading(true);
       
       try {
+        const formDataToSend = new FormData();
+        formDataToSend.append('full_name', formData.fullName);
+        formDataToSend.append('email', formData.email);
+        formDataToSend.append('password', formData.password);
+        formDataToSend.append('role', 'customer'); 
+
         const response = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/register`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            full_name: formData.fullName,
-            email: formData.email,
-            password: formData.password,
-          }),
+          body: formDataToSend,
         });
 
         const data = await response.json();
@@ -90,7 +89,7 @@ const RegisterPage = () => {
           });
           
           setTimeout(() => {
-            navigate('/login', { state: { message: data.message } });
+            navigate('/login', { state: { message: 'Registration successful! Please login.' } });
           }, 1500);
         } else {
           setNotification({ 
@@ -190,7 +189,7 @@ const RegisterPage = () => {
         
         <div className="flex-1 flex flex-col p-6">
           <div className="flex items-center gap-2 mb-6">
-            <img src="/logo.png" alt="Coffee Shop" className="h-10" />
+            <img src="/logo-coklat.svg" alt="Coffee Shop" className="h-10" />
           </div>
 
           <div className="mb-6">
