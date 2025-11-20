@@ -1,8 +1,15 @@
-export {
+export{
   getProducts,
+  getFavoriteProducts,
   getProductById,
-  getProductsByCategory,
+  getProductDetail,
+  getCategories,
   getPromos,
-  getPromoById
-} from './apiService';
+  getPromoById,
+  getProductsByCategory,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  uploadProductImage,
+}from './apiService';
 
