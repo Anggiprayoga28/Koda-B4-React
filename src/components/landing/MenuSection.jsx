@@ -22,7 +22,7 @@ const MenuSection = () => {
       
       console.log('Favorite products from backend:', data);
       
-      setFavoriteProducts(data.slice(0, 6));
+      setFavoriteProducts(data.slice(0, 4));
     } catch (err) {
       console.error('Error fetching favorite products:', err);
       setError('Failed to load favorite products');
@@ -52,8 +52,8 @@ const MenuSection = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-8 sm:mb-10 lg:mb-12">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-8 sm:mb-10 lg:mb-12">
+            {[1, 2, 3, 4].map((i) => (
               <div key={i} className="animate-pulse">
                 <div className="bg-gray-200 h-64 rounded-lg mb-4"></div>
                 <div className="bg-gray-200 h-6 rounded w-3/4 mb-2"></div>
@@ -114,7 +114,7 @@ const MenuSection = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-8 sm:mb-10 lg:mb-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-8 sm:mb-10 lg:mb-12">
               {favoriteProducts.map((product) => (
                 <div 
                   key={product.id} 
