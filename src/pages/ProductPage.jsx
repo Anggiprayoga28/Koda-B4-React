@@ -4,10 +4,12 @@ import { useSelector } from 'react-redux';
 import { ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useOrders } from '../contexts/OrderContext';
-import { getProducts, getPromos } from '../services/apiService';
 import MenuCard from '../components/landing/MenuCard';
 import Pagination from '../components/admin/Pagination';
 import Notification from '../components/ui/Notification';
+import axios from 'axios';
+
+const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:8080';
 
 const ProductPage = () => {
   const navigate = useNavigate();
@@ -18,6 +20,7 @@ const ProductPage = () => {
   
   const [products, setProducts] = useState([]);
   const [promos, setPromos] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [categories, setCategories] = useState({
     favorite: searchParams.get('favorite') === 'true',
@@ -45,13 +48,50 @@ const ProductPage = () => {
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
   const [notification, setNotification] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
-  const productsPerPage = isMobile ? 6 : 9;
+  const [productsPerPage, setProductsPerPage] = useState(window.innerWidth < 1024 ? 6 : 9);
+
+  useEffect(() => {
+    const fetchAllProducts = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(`${API_BASE_URL}/products`, {
+          params: { limit: 1000 }
+        });
+        
+        if (response.data.success && response.data.data) {
+          setProducts(response.data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchPromos = async () => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/promos`);
+        if (response.data.success && response.data.data) {
+          setPromos(response.data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching promos:', error);
+        setPromos([]);
+      }
+    };
+
+    fetchAllProducts();
+    fetchPromos();
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth < 1024;
       setIsMobile(mobile);
-      if (mobile && productsPerPage === 9) {
+      const newPerPage = mobile ? 6 : 9;
+      if (newPerPage !== productsPerPage) {
+        setProductsPerPage(newPerPage);
         setCurrentPage(1);
       }
     };
@@ -62,25 +102,6 @@ const ProductPage = () => {
 
   useEffect(() => {
     document.title = 'Our Products - Coffee Shop | Best Coffee & Food';
-  }, []);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [productsData, promosData] = await Promise.all([
-          getProducts(),
-          getPromos()
-        ]);
-        setProducts(Array.isArray(productsData) ? productsData : []);
-        setPromos(Array.isArray(promosData) ? promosData : []);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setProducts([]);
-        setPromos([]);
-      }
-    };
-
-    fetchData();
   }, []);
 
   useEffect(() => {
@@ -124,33 +145,39 @@ const ProductPage = () => {
     const container = e.target;
     const scrollLeft = container.scrollLeft;
     const scrollWidth = container.scrollWidth - container.clientWidth;
-    const progress = (scrollLeft / scrollWidth) * 100;
+    const progress = scrollWidth > 0 ? (scrollLeft / scrollWidth) * 100 : 0;
     setPromoScrollProgress(progress);
   };
 
   const filteredProducts = useMemo(() => {
     let filtered = [...products];
+    
     if (searchTerm) {
-      filtered = filtered.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+      filtered = filtered.filter(p => 
+        p.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
+    
     const hasActiveCategory = Object.values(categories).some(v => v);
     if (hasActiveCategory) {
       filtered = filtered.filter(p => {
-        if (categories.favorite && p.isFavorite) return true;
-        if (categories.coffee && p.category === 'coffee') return true;
-        if (categories.nonCoffee && p.category === 'non-coffee') return true;
-        if (categories.food && p.category === 'food') return true;
-        if (categories.addon && p.category === 'addon') return true;
+        if (categories.favorite && (p.is_favorite || p.isFavorite)) return true;
+        if (categories.coffee && p.category_id === 1) return true;
+        if (categories.nonCoffee && p.category_id === 2) return true;
+        if (categories.food && p.category_id === 3) return true;
+        if (categories.addon && p.category_id === 4) return true;
         return false;
       });
     }
+    
     if (sortBy === 'buy1get1') {
-      filtered = filtered.filter(p => p.isBuy1Get1);
+      filtered = filtered.filter(p => p.is_buy1get1 || p.isBuy1Get1);
     } else if (sortBy === 'flashsale') {
-      filtered = filtered.filter(p => p.isFlashSale);
+      filtered = filtered.filter(p => p.is_flash_sale || p.isFlashSale);
     } else if (sortBy === 'cheap') {
       filtered = filtered.sort((a, b) => a.price - b.price);
     }
+    
     filtered = filtered.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
     
     return filtered;
@@ -165,20 +192,30 @@ const ProductPage = () => {
     setSearchParams({});
   };
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, categories.favorite, categories.coffee, categories.nonCoffee, categories.food, categories.addon, sortBy]);
+
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
   const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
 
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
   const nextPromo = () => {
-    if (promos.length > 0) {
-      setPromoIndex((prev) => (prev + 1) % (promos.length - 2));
+    if (promos.length > 3) {
+      setPromoIndex((prev) => (prev + 1) % Math.max(1, promos.length - 3));
     }
   };
   
   const prevPromo = () => {
-    if (promos.length > 0) {
-      setPromoIndex((prev) => (prev - 1 + (promos.length - 2)) % (promos.length - 2));
+    if (promos.length > 3) {
+      setPromoIndex((prev) => (prev - 1 + Math.max(1, promos.length - 3)) % Math.max(1, promos.length - 3));
     }
   };
 
@@ -229,6 +266,17 @@ const ProductPage = () => {
     delete params.payment;
     setSearchParams(params);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-500">Loading products...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (showPayment) {
     const totals = calculateTotal();
@@ -434,7 +482,7 @@ const ProductPage = () => {
       </div>
 
       <div className="w-full bg-white py-6 sm:py-8 lg:py-12">
-        <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8 px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between mb-4 sm:mb-6 lg:mb-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <h2 className="text-2xl sm:text-3xl lg:text-5xl font-light">
             Today <span className="text-orange-500 font-semibold">Promo</span>
           </h2>
@@ -453,7 +501,7 @@ const ProductPage = () => {
           onScroll={handlePromoScroll}
           className="overflow-x-auto scrollbar-hide px-4 sm:px-6 lg:px-8"
         >
-          <div className="flex lg:grid lg:grid-cols-4 gap-3 sm:gap-4 pb-4">
+          <div className="flex lg:grid lg:grid-cols-4 gap-3 sm:gap-4 pb-4 max-w-7xl mx-auto">
             {promos.map((promo, idx) => (
               <div 
                 key={idx} 
@@ -487,9 +535,10 @@ const ProductPage = () => {
         </div>
 
         <div className="lg:hidden px-4 sm:px-6 mt-4">
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center justify-center">
             {[0, 1, 2, 3].map((idx) => {
-              const isActive = Math.floor((promoScrollProgress / 100) * 4) === idx;
+              const totalDots = Math.min(4, promos.length);
+              const isActive = Math.floor((promoScrollProgress / 100) * totalDots) === idx;
               return (
                 <div 
                   key={idx}
@@ -695,26 +744,43 @@ const ProductPage = () => {
           <div className="flex-1">
             {filteredProducts.length === 0 ? (
               <div className="text-center py-12 sm:py-16">
-                <p className="text-gray-500 text-base sm:text-lg">Tidak ada produk yang sesuai dengan filter Anda</p>
+                <p className="text-gray-500 text-base sm:text-lg mb-2">No products match your filters</p>
+                <p className="text-sm text-gray-400">Total products available: {products.length}</p>
+                <button 
+                  onClick={resetFilters}
+                  className="mt-4 bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition"
+                >
+                  Clear Filters
+                </button>
               </div>
             ) : (
               <>
+                <div className="mb-4 text-sm text-gray-600 flex items-center justify-between">
+                  <span>
+                    Showing {indexOfFirstProduct + 1}-{Math.min(indexOfLastProduct, filteredProducts.length)} of {filteredProducts.length} products
+                    {products.length !== filteredProducts.length && ` (filtered from ${products.length} total)`}
+                  </span>
+                  <span className="text-orange-600 font-medium">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                </div>
+                
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {currentProducts.map((product) => (
                     <div 
                       key={product.id} 
                       onClick={() => navigate(`/product/${product.id}`)}
-                      className="cursor-pointer"
+                      className="cursor-pointer transform hover:scale-105 transition-transform"
                     >
                       <MenuCard
                         title={product.name}
                         price={product.price.toLocaleString()}
                         description={product.description}
-                        image={product.image}
+                        image={product.image_url || product.image}
                         rating={product.rating}
-                        originalPrice={product.originalPrice}
-                        isFlashSale={product.isFlashSale}
-                        isBuy1Get1={product.isBuy1Get1}
+                        originalPrice={product.originalPrice || product.original_price}
+                        isFlashSale={product.is_flash_sale || product.isFlashSale}
+                        isBuy1Get1={product.is_buy1get1 || product.isBuy1Get1}
                       />
                     </div>
                   ))}
