@@ -1,17 +1,18 @@
 import axios from 'axios';
-import productsData from '../data/products.json';
-import promosData from '../data/promos.json';
+
+const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:8080';
 
 const apiClient = axios.create({
-  baseURL: '/api',
+  baseURL: API_BASE_URL,
   timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  }
 });
 
 apiClient.interceptors.request.use(
   (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
@@ -20,45 +21,72 @@ apiClient.interceptors.request.use(
 );
 
 apiClient.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('currentUser');
+      window.location.href = '/login';
+    }
     console.error('API Error:', error);
     return Promise.reject(error);
   }
 );
 
+
 /**
- * @returns {Promise<Array>} Array of products
+ * Get all products from backend
  */
-export const getProducts = async () => {
+export const getProducts = async (params = {}) => {
   try {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(productsData.products);
-      }, 100); 
-    });
+    const queryParams = new URLSearchParams();
+    
+    if (params.category) queryParams.append('category', params.category);
+    if (params.search) queryParams.append('search', params.search);
+    if (params.page) queryParams.append('page', params.page);
+    if (params.limit) queryParams.append('limit', params.limit);
+    
+    const url = `/products${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    const response = await apiClient.get(url);
+    
+    if (response.data.success && response.data.data) {
+      return response.data.data;
+    }
+    return [];
   } catch (error) {
     console.error('Error fetching products:', error);
-    throw error;
+    return [];
   }
 };
 
 /**
- * @param {number} id - Product ID
+ * Get favorite products from backend
+ */
+export const getFavoriteProducts = async () => {
+  try {
+    const response = await apiClient.get('/products/favorite');
+    
+    if (response.data.success && response.data.data) {
+      return response.data.data;
+    }
+    return [];
+  } catch (error) {
+    console.error('Error fetching favorite products:', error);
+    return [];
+  }
+};
+
+/**
+ * Get product by ID
  */
 export const getProductById = async (id) => {
   try {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const product = productsData.products.find(p => p.id === parseInt(id));
-        if (!product) {
-          reject(new Error('Product not found'));
-        }
-        resolve(product);
-      }, 100);
-    });
+    const response = await apiClient.get(`/products/${id}`);
+    
+    if (response.data.success && response.data.data) {
+      return response.data.data;
+    }
+    throw new Error('Product not found');
   } catch (error) {
     console.error('Error fetching product:', error);
     throw error;
@@ -66,77 +94,65 @@ export const getProductById = async (id) => {
 };
 
 /**
- * @param {string} category - Product category
+ * Get product detail with variants
  */
-export const getProductsByCategory = async (category) => {
+export const getProductDetail = async (id) => {
   try {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const products = productsData.products.filter(p => p.category === category);
-        resolve(products);
-      }, 100);
-    });
+    const response = await apiClient.get(`/products/${id}/detail`);
+    
+    if (response.data.success && response.data.data) {
+      return response.data.data;
+    }
+    throw new Error('Product detail not found');
   } catch (error) {
-    console.error('Error fetching products by category:', error);
+    console.error('Error fetching product detail:', error);
     throw error;
   }
 };
+
+
+export const getCategories = async () => {
+  try {
+    const response = await apiClient.get('/categories');
+    
+    if (response.data.success && response.data.data) {
+      return response.data.data;
+    }
+    return [];
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    return [];
+  }
+};
+
 
 export const getPromos = async () => {
-  try {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(promosData.promos);
-      }, 100);
-    });
-  } catch (error) {
-    console.error('Error fetching promos:', error);
-    throw error;
-  }
+  return [
+    {
+      id: 1,
+      title: "Flash Sale 50%",
+      description: "Get 50% off on selected items",
+      image: "/promo1.png"
+    }
+  ];
 };
 
-/**
- * @param {number} id - Promo ID
- */
 export const getPromoById = async (id) => {
-  try {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const promo = promosData.promos.find(p => p.id === parseInt(id));
-        if (!promo) {
-          reject(new Error('Promo not found'));
-        }
-        resolve(promo);
-      }, 100);
-    });
-  } catch (error) {
-    console.error('Error fetching promo:', error);
-    throw error;
-  }
+  const promos = await getPromos();
+  return promos.find(p => p.id === parseInt(id));
 };
 
-export const api = {
-  products: {
-    getAll: () => apiClient.get('/products'),
-    getById: (id) => apiClient.get(`/products/${id}`),
-    create: (data) => apiClient.post('/products', data),
-    update: (id, data) => apiClient.put(`/products/${id}`, data),
-    delete: (id) => apiClient.delete(`/products/${id}`)
-  },
-  promos: {
-    getAll: () => apiClient.get('/promos'),
-    getById: (id) => apiClient.get(`/promos/${id}`),
-    create: (data) => apiClient.post('/promos', data),
-    update: (id, data) => apiClient.put(`/promos/${id}`, data),
-    delete: (id) => apiClient.delete(`/promos/${id}`)
-  }
+export const getProductsByCategory = async (category) => {
+  return getProducts({ category });
 };
 
 export default {
   getProducts,
+  getFavoriteProducts,
   getProductById,
-  getProductsByCategory,
+  getProductDetail,
+  getCategories,
   getPromos,
   getPromoById,
-  api
+  getProductsByCategory,
 };
