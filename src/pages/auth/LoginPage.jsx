@@ -61,26 +61,25 @@ const LoginPage = () => {
       setLoading(true);
       
       try {
+        const formDataToSend = new formData();
+        formDataToSend.appemd
+
         const response = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/login`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: formData.email,
-            password: formData.password,
-          }),
+          body: formDataToSend,
         });
 
         const data = await response.json();
 
         if (data.success && data.data) {
           const userSession = {
-            id: data.data.user_id,
-            fullName: data.data.full_name,
-            email: data.data.email,
-            photoUrl: data.data.photo_url || null,
-            token: data.data.token,
+            id: data.data.user.id,
+            fullName: data.data.user.fullName,
+            email: data.data.user.email,
+            role: data.data.user.role,
+            photoUrl: data.data.user.photoUrl || null,
+            phone: data.data.user.phone || '',
+            address: data.data.user.address || '',
           };
 
           localStorage.setItem('token', data.data.token);
