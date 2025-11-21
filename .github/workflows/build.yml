@@ -49,20 +49,20 @@ jobs:
           docker push ghcr.io/anggiprayoga28/koda-frontend:latest
           docker push ghcr.io/anggiprayoga28/koda-frontend:${{ steps.vars.outputs.version }}
 
-deploy:
-  needs: build-and-release
-  runs-on: ubuntu-latest
-  steps:
-    - name: Execute remote SSH commands using SSH key
-      uses: appleboy/ssh-action@v1
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.KEY }}
-        port: ${{ secrets.PORT }}
-        script: |
-          docker pull ghcr.io/anggiprayoga28/koda-frontend:latest
-          cd ~/server/frontend
-          docker compose pull
-          docker compose up app -d
-          docker system prune -a --volumes
+  deploy:
+    needs: build-and-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute remote SSH commands using SSH key
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd ~/server/frontend
+            docker compose down -v
+            docker compose pull
+            docker compose up app -d
+            docker system prune -a --volumes
