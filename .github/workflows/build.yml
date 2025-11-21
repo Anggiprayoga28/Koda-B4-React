@@ -50,7 +50,7 @@ jobs:
           docker push ghcr.io/anggiprayoga28/koda-frontend:${{ steps.vars.outputs.version }}
 
   deploy:
-    needs: build-and-push
+    needs: build_and_push
     runs-on: ubuntu-latest  
     environment: build
     steps:
