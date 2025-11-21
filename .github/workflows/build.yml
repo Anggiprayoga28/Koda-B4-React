@@ -49,23 +49,3 @@ jobs:
           VERSION=${GITHUB_SHA::7}
           docker push ghcr.io/anggiprayoga28/koda-frontend:latest
           docker push ghcr.io/anggiprayoga28/koda-frontend:$VERSION
-
-  deploy:
-    needs: build_and_push
-    runs-on: ubuntu-latest
-    environment: build
-
-    steps:
-      - name: Deploy to Server via SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: ${{ secrets.PORT }}
-          script: |
-            cd server/frontend/
-            docker compose down -v
-            docker compose pull
-            docker compose up -d
-            docker system prune -af --volumes
