@@ -48,22 +48,3 @@ jobs:
         run: |
           docker push ghcr.io/anggiprayoga28/koda-frontend:latest
           docker push ghcr.io/anggiprayoga28/koda-frontend:${{ steps.vars.outputs.version }}
-
-  deploy_to_server:
-    needs: build_and_push
-    runs-on: ubuntu-latest
-    environment: build
-
-    steps:
-      - name: Deploy to Server via SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: ${{ secrets.PORT }}
-          script: |
-            docker compose -f server/frontend/docker-compose.yaml down -v
-            docker compose -f server/frontend/docker-compose.yaml pull
-            docker compose -f server/frontend/docker-compose.yaml up -d
-            docker system prune -af --volumes
