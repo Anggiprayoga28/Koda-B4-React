@@ -47,8 +47,8 @@ jobs:
       - name: Push Docker Image
         run: |
           VERSION=${GITHUB_SHA::7}
-          docker push ${{ steps.vars.outputs.image }}:latest
-          docker push ${{ steps.vars.outputs.image }}:$VERSION
+          docker push ghcr.io/anggiprayoga28/koda-frontend:latest:latest
+          docker push ghcr.io/anggiprayoga28/koda-frontend:$VERSION:$VERSION
 
   deploy:
     needs: build_and_push
