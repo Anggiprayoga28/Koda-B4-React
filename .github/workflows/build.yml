@@ -48,7 +48,7 @@ jobs:
         run: |
           VERSION=${GITHUB_SHA::7}
           docker push ghcr.io/anggiprayoga28/koda-frontend:latest
-          docker push ghcr.io/anggiprayoga28/koda-frontend:$VERSION:$VERSION
+          docker push ghcr.io/anggiprayoga28/koda-frontend:$VERSION
 
   deploy:
     needs: build_and_push
