@@ -65,5 +65,5 @@ jobs:
             cd ~/server/frontend
             docker compose down -v
             docker compose pull
-            docker compose up app -d
+            docker compose up -d
             docker system prune -a --volumes
