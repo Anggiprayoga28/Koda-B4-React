@@ -66,4 +66,4 @@ jobs:
             docker compose down -v
             docker compose pull
             docker compose up -d
-            docker system prune -a --volumes
+            docker system prune -af --volumes
