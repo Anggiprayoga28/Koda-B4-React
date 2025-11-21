@@ -40,14 +40,14 @@ jobs:
         run: |
           docker build \
             --build-arg VITE_BASE_URL=${{ secrets.VITE_BASE_URL }} \
-            -t ${{ steps.vars.outputs.image }}:latest \
-            -t ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.version }} \
+            -t ghcr.io/anggiprayoga28/koda-frontend:latest \
+            -t ghcr.io/anggiprayoga28/koda-frontend:${{ steps.vars.outputs.version }} \
             .
 
       - name: Push Docker Image
         run: |
-          docker push ${{ steps.vars.outputs.image }}:latest
-          docker push ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.version }}
+          docker push ghcr.io/anggiprayoga28/koda-frontend:latest
+          docker push ghcr.io/anggiprayoga28/koda-frontend:${{ steps.vars.outputs.version }}
 
   deploy_to_server:
     needs: build_and_push
