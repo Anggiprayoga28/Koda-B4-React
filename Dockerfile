@@ -1,5 +1,7 @@
 FROM node:18-alpine AS builder
 WORKDIR /app
+ARG VITE_BASE_URL
+ENV VITE_BASE_URL=$VITE_BASE_URL
 COPY package*.json ./
 RUN npm install
 COPY . .
