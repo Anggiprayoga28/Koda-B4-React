@@ -36,13 +36,13 @@ jobs:
         id: vars
         run: echo "image=ghcr.io/${{ github.repository_owner }}/koda-frontend" >> $GITHUB_OUTPUT
 
-      - name: Build Docker Image
+      - name: Build Docker image
         run: |
           VERSION=${GITHUB_SHA::7}
           docker build \
             --build-arg VITE_BASE_URL=${{ secrets.VITE_BASE_URL }} \
-            -t ${{ steps.vars.outputs.image }}:latest \
-            -t ${{ steps.vars.outputs.image }}:$VERSION .
+            -t ghcr.io/anggiprayoga28/koda-frontend:latest \
+            -t ghcr.io/anggiprayoga28/koda-frontend:$VERSION .
 
       - name: Push Docker Image
         run: |
