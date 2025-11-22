@@ -1,20 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, ShoppingCart, Menu, X, User, ChevronDown } from 'lucide-react';
 import Logo from '../ui/Logo';
-
-/**
- * @param {Object} user - Current user object
- * @param {Function} onLogout - Logout handler
- */
+import api from '../../config/axiosConfig';
 
 const Navbar = ({ user, onLogout }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
   const location = useLocation();
   const navigate = useNavigate();
 
   const isActive = (path) => location.pathname === path;
+
+  useEffect(() => {
+    if (user) {
+      fetchCartCount();
+    } else {
+      setCartCount(0);
+    }
+  }, [user, location.pathname]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isProfileDropdownOpen && !event.target.closest('.profile-dropdown')) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isProfileDropdownOpen]);
+
+  const fetchCartCount = async () => {
+    try {
+      const response = await api.get('/cart');
+
+      if (response.data.success && response.data.data) {
+        const items = response.data.data.items || [];
+        const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+        setCartCount(totalItems);
+      }
+    } catch (error) {
+      console.error('Error fetching cart count:', error);
+      setCartCount(0);
+    }
+  };
 
   const handleProfileClick = () => {
     navigate('/profile');
@@ -25,6 +56,16 @@ const Navbar = ({ user, onLogout }) => {
     onLogout();
     setIsProfileDropdownOpen(false);
     setIsMobileMenuOpen(false);
+    setCartCount(0);
+    navigate('/');
+  };
+
+  const handleCartClick = () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    navigate('/cart');
   };
 
   return (
@@ -70,11 +111,21 @@ const Navbar = ({ user, onLogout }) => {
               <button className="hover:text-white transition-colors text-gray-400">
                 <Search className="w-5 h-5" />
               </button>
-              <button className="hover:text-white transition-colors text-gray-400">
+              
+              <button 
+                onClick={handleCartClick}
+                className="relative hover:text-white transition-colors text-gray-400"
+              >
                 <ShoppingCart className="w-5 h-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {cartCount > 99 ? '99+' : cartCount}
+                  </span>
+                )}
               </button>
+
               {user ? (
-                <div className="relative">
+                <div className="relative profile-dropdown">
                   <button 
                     onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
                     className="flex items-center gap-2 hover:opacity-80 transition-opacity"
@@ -96,8 +147,8 @@ const Navbar = ({ user, onLogout }) => {
                   {isProfileDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-gray-900 rounded-lg shadow-lg border border-gray-700 py-2 z-50">
                       <div className="px-4 py-2 border-b border-gray-700">
-                        <p className="text-sm font-semibold text-white">{user.fullName}</p>
-                        <p className="text-xs text-gray-400">{user.email}</p>
+                        <p className="text-sm font-semibold text-white truncate">{user.fullName}</p>
+                        <p className="text-xs text-gray-400 truncate">{user.email}</p>
                       </div>
                       <button
                         onClick={handleProfileClick}
@@ -105,6 +156,17 @@ const Navbar = ({ user, onLogout }) => {
                       >
                         Profile
                       </button>
+                      {user.role === 'admin' && (
+                        <button
+                          onClick={() => {
+                            navigate('/dashboard');
+                            setIsProfileDropdownOpen(false);
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 transition-colors"
+                        >
+                          Dashboard
+                        </button>
+                      )}
                       <button
                         onClick={handleLogout}
                         className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-800 transition-colors"
@@ -198,6 +260,24 @@ const Navbar = ({ user, onLogout }) => {
               </Link>
               {user && (
                 <>
+                  <button
+                    onClick={() => {
+                      handleCartClick();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`flex items-center justify-between w-full py-3 px-2 text-base font-medium transition-colors ${
+                      isActive('/cart') 
+                        ? 'text-gray-900 border-b-2 border-orange-500' 
+                        : 'text-gray-700 hover:text-orange-500'
+                    }`}
+                  >
+                    <span>Cart</span>
+                    {cartCount > 0 && (
+                      <span className="bg-orange-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                        {cartCount > 99 ? '99+' : cartCount}
+                      </span>
+                    )}
+                  </button>
                   <Link 
                     to="/history-order" 
                     className={`block py-3 px-2 text-base font-medium transition-colors ${
@@ -220,6 +300,19 @@ const Navbar = ({ user, onLogout }) => {
                   >
                     Profile
                   </Link>
+                  {user.role === 'admin' && (
+                    <Link 
+                      to="/dashboard" 
+                      className={`block py-3 px-2 text-base font-medium transition-colors ${
+                        isActive('/dashboard') 
+                          ? 'text-gray-900 border-b-2 border-orange-500' 
+                          : 'text-gray-700 hover:text-orange-500'
+                      }`}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                  )}
                 </>
               )}
             </div>
@@ -227,27 +320,25 @@ const Navbar = ({ user, onLogout }) => {
             <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200">
               {user ? (
                 <>
-                  {user.photoUrl || user.fullName ? (
-                    <div className="mb-4 pb-4 border-b border-gray-200">
-                      <div className="flex items-center gap-3">
-                        {user.photoUrl ? (
-                          <img 
-                            src={user.photoUrl} 
-                            alt="Profile" 
-                            className="w-12 h-12 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center">
-                            <User className="w-6 h-6 text-white" />
-                          </div>
-                        )}
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">{user.fullName}</p>
-                          <p className="text-xs text-gray-500">{user.email}</p>
+                  <div className="mb-4 pb-4 border-b border-gray-200">
+                    <div className="flex items-center gap-3">
+                      {user.photoUrl ? (
+                        <img 
+                          src={user.photoUrl} 
+                          alt="Profile" 
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center">
+                          <User className="w-6 h-6 text-white" />
                         </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 truncate">{user.fullName}</p>
+                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
                       </div>
                     </div>
-                  ) : null}
+                  </div>
                   <button 
                     onClick={handleLogout} 
                     className="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-lg font-semibold transition-colors"
