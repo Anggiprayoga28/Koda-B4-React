@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { Mail, Lock } from 'lucide-react';
 import AuthLayout from '../../components/layout/AuthLayout';
 import PageHeader from '../../components/layout/PageHeader';
@@ -9,15 +10,29 @@ import Button from '../../components/ui/Button';
 import LinkText from '../../components/layout/LinkText';
 import SocialButtons from '../../components/ui/SocialButtons';
 import Notification from '../../components/ui/Notification';
+import { login } from '../../redux/authActions';
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
+  
+  const { isAuthenticated, user } = useSelector(state => state.auth);
   
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
   const [notification, setNotification] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.role === 'admin') {
+        navigate('/dashboard');
+      } else {
+        navigate('/');
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
 
   useEffect(() => {
     document.title = 'Login - Coffee Shop';
@@ -61,38 +76,18 @@ const LoginPage = () => {
       setLoading(true);
       
       try {
-        const formDataToSend = new formData();
-        formDataToSend.appemd
+        const formDataToSend = new FormData();
+        formDataToSend.append('email', formData.email);
+        formDataToSend.append('password', formData.password);
 
-        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/login`, {
-          method: 'POST',
-          body: formDataToSend,
-        });
-
-        const data = await response.json();
-
-        if (data.success && data.data) {
-          const userSession = {
-            id: data.data.user.id,
-            fullName: data.data.user.fullName,
-            email: data.data.user.email,
-            role: data.data.user.role,
-            photoUrl: data.data.user.photoUrl || null,
-            phone: data.data.user.phone || '',
-            address: data.data.user.address || '',
-          };
-
-          localStorage.setItem('token', data.data.token);
-          localStorage.setItem('currentUser', JSON.stringify(userSession));
-
+        const result = await dispatch(login(formDataToSend));
+        
+        if (result.payload?.success) {
           setNotification({ message: 'Login successful!', type: 'success' });
           
-          setTimeout(() => {
-            navigate('/');
-          }, 1000);
         } else {
           setNotification({ 
-            message: data.message || 'Invalid email or password', 
+            message: result.payload?.message || 'Invalid email or password', 
             type: 'error' 
           });
         }
