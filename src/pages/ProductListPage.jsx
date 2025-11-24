@@ -6,10 +6,7 @@ import DataTable from '../components/admin/DataTable';
 import Pagination from '../components/admin/Pagination';
 import ActionButton from '../components/admin/ActionButton';
 import ProductFormModal from '../components/admin/ProductFormModal';
-import { getProducts } from '../services/apiService';
-import axios from 'axios';
-
-const API_BASE_URL = import.meta.env.VITE_BASE_URL;
+import { getProducts, createProduct, updateProduct, deleteProduct } from '../services/apiService';
 
 const ProductListPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -71,33 +68,17 @@ const ProductListPage = () => {
 
   const handleSaveProduct = async (formData) => {
     try {
-      const token = localStorage.getItem('token');
-      const endpoint = selectedProduct 
-        ? `${API_BASE_URL}/products/${selectedProduct.id}` 
-        : `${API_BASE_URL}/products`;
-      
-      const method = selectedProduct ? 'PUT' : 'POST';
-
-      const response = await axios({
-        method: method,
-        url: endpoint,
-        data: formData,
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      if (response.data.success) {
-        showNotification(
-          selectedProduct 
-            ? 'Product updated successfully!' 
-            : 'Product created successfully!',
-          'success'
-        );
-        setIsModalOpen(false);
-        fetchProducts(); 
+      if (selectedProduct) {
+        await updateProduct(selectedProduct.id, formData);
+        showNotification('Product updated successfully!', 'success');
+      } else {
+        await createProduct(formData);
+        showNotification('Product created successfully!', 'success');
       }
+
+      setIsModalOpen(false);
+      setSelectedProduct(null);
+      fetchProducts();
     } catch (error) {
       console.error('Error saving product:', error);
       showNotification(
@@ -113,17 +94,9 @@ const ProductListPage = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.delete(`${API_BASE_URL}/products/${productId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.data.success) {
-        showNotification('Product deleted successfully!', 'success');
-        fetchProducts(); 
-      }
+      await deleteProduct(productId);
+      showNotification('Product deleted successfully!', 'success');
+      fetchProducts();
     } catch (error) {
       console.error('Error deleting product:', error);
       showNotification(
