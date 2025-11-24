@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MenuCard from './MenuCard';
-import { getFavoriteProducts } from '../../services/apiService';
+import {getFavoriteProducts} from '../../services/apiService';
 
 const MenuSection = () => {
   const navigate = useNavigate();
@@ -19,10 +19,7 @@ const MenuSection = () => {
       setError(null);
       
       const data = await getFavoriteProducts();
-      
-      console.log('Favorite products from backend:', data);
-      
-      setFavoriteProducts(data.slice(0, 4));
+      setFavoriteProducts(data?.slice(0, 4));
     } catch (err) {
       console.error('Error fetching favorite products:', err);
       setError('Failed to load favorite products');
@@ -36,7 +33,7 @@ const MenuSection = () => {
   };
 
   const handleSeeMore = () => {
-    navigate('/product?favorite=true');
+    navigate('/payment-detail');
   };
 
   if (loading) {
@@ -102,7 +99,7 @@ const MenuSection = () => {
           </p>
         </div>
 
-        {favoriteProducts.length === 0 ? (
+        {favoriteProducts?.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500 mb-4">No favorite products available yet</p>
             <button 
@@ -115,7 +112,7 @@ const MenuSection = () => {
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-8 sm:mb-10 lg:mb-12">
-              {favoriteProducts.map((product) => (
+              {favoriteProducts?.map((product) => (
                 <div 
                   key={product.id} 
                   onClick={() => handleProductClick(product.id)}
