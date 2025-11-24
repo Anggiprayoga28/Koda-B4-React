@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Package } from 'lucide-react';
-import { useOrders } from '../contexts/OrderContext';
 import Notification from '../components/ui/Notification';
 import Pagination from '../components/admin/Pagination';
+import { getOrderHistory } from '../services/apiService';
 
 const HistoryOrderPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { orders } = useOrders();
   
-  const [activeTab, setActiveTab] = useState('on-progress');
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('pending');
   const [selectedMonth, setSelectedMonth] = useState('January 2023');
   const [showMessage, setShowMessage] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [message, setMessage] = useState('');
   const [notification, setNotification] = useState(null);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   
   const itemsPerPage = 4;
 
@@ -24,11 +27,11 @@ const HistoryOrderPage = () => {
   }, []);
 
   useEffect(() => {
-    if (location.state?.fromCheckout && location.state?.message) {
+    if (location.state?.message) {
       showNotification(location.state.message, 'success');
-      navigate(location.pathname, { replace: true });
+      window.history.replaceState({}, document.title);
     }
-  }, [location, navigate]);
+  }, [location]);
 
   useEffect(() => {
     if (notification) {
@@ -39,6 +42,53 @@ const HistoryOrderPage = () => {
     }
   }, [notification]);
 
+  useEffect(() => {
+    fetchOrders();
+  }, [activeTab, currentPage]);
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      
+      const params = {
+        page: currentPage,
+        limit: itemsPerPage,
+      };
+      
+      if (activeTab && activeTab !== 'all') {
+        params.status = activeTab;
+      }
+      
+      console.log('Fetching orders with params:', params);
+      
+      const response = await getOrderHistory(params);
+      console.log('Orders response:', response);
+      
+      const ordersData = response.data || [];
+      
+      const mappedOrders = ordersData.map(order => ({
+        id: order.id || order.order_id,
+        invoice: order.invoice || order.order_number || order.id,
+        date: order.date || order.created_at || order.order_date || new Date().toLocaleDateString(),
+        total: order.total || order.total_amount || order.grandTotal || 0,
+        status: order.status || 'pending',
+        statusDisplay: getStatusDisplay(order.status || 'pending'),
+        imageProduct: order.imageProduct || order.image_url || order.product_image || '/placeholder.png'
+      }));
+      
+      setOrders(mappedOrders);
+      setTotalPages(response.meta?.totalPages || 1);
+      setTotalItems(response.meta?.totalItems || ordersData.length);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      console.error('Error details:', error.response?.data);
+      showNotification('Failed to load order history', 'error');
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
   };
@@ -46,13 +96,6 @@ const HistoryOrderPage = () => {
   const handleViewOrder = (orderId) => {
     navigate(`/order/${orderId}`);
   };
-
-  const filteredOrders = orders.filter(order => {
-    if (activeTab === 'on-progress') return order.status === 'On Progress';
-    if (activeTab === 'sending-goods') return order.status === 'Sending Goods';
-    if (activeTab === 'finish-order') return order.status === 'Finish Order';
-    return true;
-  });
 
   const handleSendMessage = () => {
     if (message.trim()) {
@@ -62,14 +105,51 @@ const HistoryOrderPage = () => {
     }
   };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const handleTabChange = (newTab) => {
+    setActiveTab(newTab);
+    setCurrentPage(1);
   };
 
-  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentOrders = filteredOrders.slice(startIndex, startIndex + itemsPerPage);
+  const formatDate = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    } catch (e) {
+      return dateString;
+    }
+  };
+
+  const getStatusDisplay = (status) => {
+    if (!status) return 'Unknown';
+    
+    const statusLower = status.toLowerCase();
+    
+    const statusMap = {
+      'pending': 'On Progress',
+      'processing': 'On Progress',
+      'in_progress': 'On Progress',
+      'shipping': 'Sending Goods',
+      'shipped': 'Sending Goods',
+      'in_delivery': 'Sending Goods',
+      'done': 'Finish Order',
+      'completed': 'Finish Order',
+      'delivered': 'Finish Order',
+      'finished': 'Finish Order',
+      'cancelled': 'Cancelled',
+      'canceled': 'Cancelled',
+      'failed': 'Failed'
+    };
+    
+    return statusMap[statusLower] || status;
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -81,7 +161,7 @@ const HistoryOrderPage = () => {
         <div className="flex items-center gap-3 mb-6 md:mb-8">
           <h1 className="text-2xl md:text-5xl font-light">History Order</h1>
           <span className="bg-gray-200 text-gray-700 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-semibold text-sm md:text-base">
-            {filteredOrders.length}
+            {totalItems}
           </span>
         </div>
 
@@ -91,8 +171,12 @@ const HistoryOrderPage = () => {
               <div className="relative w-full md:w-auto order-1 md:order-2">
                 <select 
                   value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedMonth(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="appearance-none bg-[#F1F1F1] px-4 py-3 md:py-5 pr-10 font-medium cursor-pointer hover:border-gray-400 transition w-full"
+                  disabled
                 >
                   <option>January 2023</option>
                   <option>February 2023</option>
@@ -106,9 +190,9 @@ const HistoryOrderPage = () => {
 
               <div className="flex bg-[#E8E8E84D] p-2 shadow-sm overflow-hidden order-2 md:order-1 w-full md:w-auto">
                 <button
-                  onClick={() => setActiveTab('on-progress')}
+                  onClick={() => handleTabChange('pending')}
                   className={`flex-1 md:flex-none px-3 md:px-6 py-3 font-medium transition text-sm md:text-base ${
-                    activeTab === 'on-progress' 
+                    activeTab === 'pending' 
                       ? 'bg-white text-gray-900' 
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
@@ -116,9 +200,9 @@ const HistoryOrderPage = () => {
                   On Progress
                 </button>
                 <button
-                  onClick={() => setActiveTab('sending-goods')}
+                  onClick={() => handleTabChange('shipping')}
                   className={`flex-1 md:flex-none px-3 md:px-6 py-3 font-medium transition text-sm md:text-base ${
-                    activeTab === 'sending-goods' 
+                    activeTab === 'shipping' 
                       ? 'bg-white text-gray-900' 
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
@@ -126,9 +210,9 @@ const HistoryOrderPage = () => {
                   Sending Goods
                 </button>
                 <button
-                  onClick={() => setActiveTab('finish-order')}
+                  onClick={() => handleTabChange('done')}
                   className={`flex-1 md:flex-none px-3 md:px-6 py-3 font-medium transition text-sm md:text-base ${
-                    activeTab === 'finish-order' 
+                    activeTab === 'done' 
                       ? 'bg-white text-gray-900' 
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
@@ -138,21 +222,23 @@ const HistoryOrderPage = () => {
               </div>
             </div>
 
-            {currentOrders.length === 0 ? (
+            {orders.length === 0 ? (
               <div className="bg-white rounded-lg shadow-sm p-12 text-center">
                 <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500 text-lg">No orders found in this category</p>
+                <p className="text-gray-500 text-lg mb-2">No orders found in this category</p>
+                <p className="text-gray-400 text-sm">Your order history will appear here after checkout</p>
               </div>
             ) : (
               <>
                 <div className="space-y-4">
-                  {currentOrders.map((order) => (
-                    <div key={order.orderId} className="bg-[#E8E8E84D] p-4 md:p-6 hover:shadow-md transition">
+                  {orders.map((order) => (
+                    <div key={order.id} className="bg-[#E8E8E84D] p-4 md:p-6 hover:shadow-md transition">
                       <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6">
                         <img 
-                          src={order.items[0]?.image || ''} 
+                          src={order.imageProduct} 
                           alt="Order" 
                           className="w-full md:w-24 h-32 md:h-24 object-cover rounded-lg hidden md:block"
+                          onError={(e) => e.target.src = '/placeholder.png'}
                         />
                         
                         <div className="flex-1 w-full">
@@ -162,9 +248,9 @@ const HistoryOrderPage = () => {
                                 <img src='/glass.svg' className="w-4 h-4" />
                                 <span>No. Order</span>
                               </div>
-                              <div className="font-semibold line-clamp-1 text-sm md:text-base">#{order.orderId}</div>
+                              <div className="font-semibold line-clamp-1 text-sm md:text-base">#{order.invoice}</div>
                               <button 
-                                onClick={() => handleViewOrder(order.orderId)}
+                                onClick={() => handleViewOrder(order.id)}
                                 className="text-orange-500 text-xs md:text-sm font-medium mt-1 hover:underline"
                               >
                                 Views Order Detail
@@ -176,7 +262,7 @@ const HistoryOrderPage = () => {
                                 <img src='/Calendar.svg' className="w-4 h-4" />
                                 <span>Date</span>
                               </div>
-                              <div className="font-semibold text-sm md:text-base">{formatDate(order.orderDate)}</div>
+                              <div className="font-semibold text-sm md:text-base">{order.date}</div>
                             </div>
 
                             <div>
@@ -184,7 +270,7 @@ const HistoryOrderPage = () => {
                                 <img src='/Repeat.svg' className="w-4 h-4" />
                                 <span>Total</span>
                               </div>
-                              <div className="font-semibold text-sm md:text-base">Idr {Math.round(order.total).toLocaleString()}</div>
+                              <div className="font-semibold text-sm md:text-base">Idr {order.total.toLocaleString()}</div>
                             </div>
 
                             <div>
@@ -193,11 +279,12 @@ const HistoryOrderPage = () => {
                                 <span>Status</span>
                               </div>
                               <span className={`inline-block px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-medium ${
-                                order.status === 'On Progress' ? 'bg-orange-100 text-orange-600' :
-                                order.status === 'Sending Goods' ? 'bg-blue-100 text-blue-600' :
-                                'bg-green-100 text-green-600'
+                                order.status === 'pending' || order.status === 'processing' ? 'bg-orange-100 text-orange-600' :
+                                order.status === 'shipping' || order.status === 'shipped' ? 'bg-blue-100 text-blue-600' :
+                                order.status === 'done' || order.status === 'completed' || order.status === 'delivered' ? 'bg-green-100 text-green-600' :
+                                'bg-gray-100 text-gray-600'
                               }`}>
-                                {order.status}
+                                {order.statusDisplay}
                               </span>
                             </div>
                           </div>
@@ -207,13 +294,15 @@ const HistoryOrderPage = () => {
                   ))}
                 </div>
 
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                  itemsPerPage={itemsPerPage}
-                  totalItems={filteredOrders.length}
-                />
+                {totalPages > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    itemsPerPage={itemsPerPage}
+                    totalItems={totalItems}
+                  />
+                )}
               </>
             )}
 
