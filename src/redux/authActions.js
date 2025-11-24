@@ -1,95 +1,111 @@
-import {
-  loginStart,
-  loginSuccess,
-  loginFailure,
-  registerStart,
-  registerSuccess,
-  registerFailure,
-  logout as logoutAction,
+import { 
+  loginStart, 
+  loginSuccess, 
+  loginFailure, 
+  logout, 
+  updateUserProfile 
 } from './authSlice';
-
-const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export const login = (formData) => async (dispatch) => {
   dispatch(loginStart());
-
+  
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/login`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: formData.email,
-        password: formData.password,
-      }),
+      body: formData,
     });
-
+    
     const data = await response.json();
-
+    
     if (data.success && data.data) {
       const userSession = {
-        id: data.data.user_id,
-        fullName: data.data.full_name,
-        email: data.data.email,
-        photoUrl: data.data.photo_url || null,
-        token: data.data.token,
+        id: data.data.user.id,
+        fullName: data.data.user.fullName,
+        email: data.data.user.email,
+        role: data.data.user.role,
+        photoUrl: data.data.user.photoUrl || null,
+        phone: data.data.user.phone || '',
+        address: data.data.user.address || '',
       };
 
-      localStorage.setItem('token', data.data.token);
-      localStorage.setItem('currentUser', JSON.stringify(userSession));
-      
-      dispatch(loginSuccess(userSession));
-      return { success: true };
+      dispatch(loginSuccess({
+        user: userSession,
+        token: data.data.token
+      }));
+
+      return { success: true, data: userSession };
     } else {
-      const errorMsg = data.message || 'Invalid email or password';
-      dispatch(loginFailure(errorMsg));
-      return { success: false, error: errorMsg };
+      dispatch(loginFailure());
+      return { 
+        success: false, 
+        message: data.message || 'Login failed' 
+      };
     }
   } catch (error) {
     console.error('Login error:', error);
-    const errorMsg = 'Network error. Please check your connection.';
-    dispatch(loginFailure(errorMsg));
-    return { success: false, error: errorMsg };
+    dispatch(loginFailure());
+    return { 
+      success: false, 
+      message: 'Network error. Please check your connection.' 
+    };
   }
 };
 
-export const register = (formData) => async (dispatch) => {
-  dispatch(registerStart());
+export const logoutUser = () => (dispatch) => {
+  dispatch(logout());
+  
+  window.location.href = '/login';
+};
 
+export const updateUser = (userData) => async (dispatch, getState) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
-      method: 'POST',
+    const { token } = getState().auth;
+    
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/profile`, {
+      method: 'PUT',
       headers: {
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        full_name: formData.fullName,
-        email: formData.email,
-        password: formData.password,
-      }),
+      body: JSON.stringify(userData),
     });
-
+    
     const data = await response.json();
-
+    
     if (data.success) {
-      dispatch(registerSuccess());
-      return { success: true, message: data.message };
+      dispatch(updateUserProfile(data.data));
+      return { success: true, data: data.data };
     } else {
-      const errorMsg = data.message || 'Registration failed';
-      dispatch(registerFailure(errorMsg));
-      return { success: false, error: errorMsg };
+      return { success: false, message: data.message };
     }
   } catch (error) {
-    console.error('Registration error:', error);
-    const errorMsg = 'Network error. Please check your connection.';
-    dispatch(registerFailure(errorMsg));
-    return { success: false, error: errorMsg };
+    console.error('Update profile error:', error);
+    return { success: false, message: 'Network error' };
   }
 };
 
-export const logout = () => (dispatch) => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('currentUser');
-  dispatch(logoutAction());
+export const updateProfilePicture = (formData) => async (dispatch, getState) => {
+  try {
+    const { token } = getState().auth;
+    
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/profile-picture`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData,
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      dispatch(updateUserProfile({ photoUrl: data.data.photoUrl }));
+      return { success: true, data: data.data };
+    } else {
+      return { success: false, message: data.message };
+    }
+  } catch (error) {
+    console.error('Update profile picture error:', error);
+    return { success: false, message: 'Network error' };
+  }
 };
