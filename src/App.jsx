@@ -19,7 +19,10 @@ import ProductListPage from './pages/ProductListPage';
 import OrderListPage from './pages/OrderListPage';
 import UserListPage from './pages/UserListPage';
 import Notification from './components/ui/Notification';
-import { logout } from './redux/authActions';
+import { logoutUser } from './redux/authActions';
+import CartPage from './pages/cart/CartPage';
+import CheckoutPage from './pages/checkoutPage';
+import ProductPaymentDetails from './components/ProductPaymentDetails';
 
 function App() {
   const dispatch = useDispatch();
@@ -53,7 +56,7 @@ function App() {
   };
 
   const handleLogout = () => {
-    dispatch(logout());
+    dispatch(logoutUser());
     window.location.href = '/login';
   };
 
@@ -84,93 +87,119 @@ function App() {
   };
 
   return (
-    <BrowserRouter>
-      <CartProvider>
-        <OrderProvider>
-          {notification && (
-            <Notification message={notification.message} type={notification.type} />
-          )}
-          <div className="flex flex-col min-h-screen">
-            <Layout>
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/product" element={<ProductPage />} />
-                <Route path="/product/:id" element={<ProductDetailPage />} />
+    <CartProvider>
+      <OrderProvider>
+        {notification && (
+          <Notification message={notification.message} type={notification.type} />
+        )}
 
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route
-                  path="/forgot-password"
-                  element={
-                    <ForgotPasswordPage onForgotPassword={handleForgotPassword} />
-                  }
-                />
+        <div className="flex flex-col min-h-screen">
+          <Layout>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/product" element={<ProductPage />} />
+              <Route path="/product/:id" element={<ProductDetailPage />} />
 
-                <Route
-                  path="/order/:orderId"
-                  element={
-                    <ProtectedRoute>
-                      <OrderDetailPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/history-order"
-                  element={
-                    <ProtectedRoute>
-                      <HistoryOrderPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/profile"
-                  element={
-                    <ProtectedRoute>
-                      <ProfilePage />
-                    </ProtectedRoute>
-                  }
-                />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route
+                path="/forgot-password"
+                element={
+                  <ForgotPasswordPage onForgotPassword={handleForgotPassword} />
+                }
+              />
 
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <DashboardPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin/products"
-                  element={
-                    <ProtectedRoute>
-                      <ProductListPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin/orders"
-                  element={
-                    <ProtectedRoute>
-                      <OrderListPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin/users"
-                  element={
-                    <ProtectedRoute>
-                      <UserListPage />
-                    </ProtectedRoute>
-                  }
-                />
+              <Route
+                path="/cart"
+                element={
+                  <ProtectedRoute>
+                    <CartPage />
+                  </ProtectedRoute>
+                }
+              />
 
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </Layout>
-          </div>
-        </OrderProvider>
-      </CartProvider>
-    </BrowserRouter>
+              <Route
+                path="/payment-detail"
+                element={
+                  <ProtectedRoute>
+                    <ProductPaymentDetails />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/checkout"
+                element={
+                  <ProtectedRoute>
+                    <CheckoutPage />
+                  </ProtectedRoute>
+                }
+              />
+              
+              <Route
+                path="/order/:orderId"
+                element={
+                  <ProtectedRoute>
+                    <OrderDetailPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/history-order"
+                element={
+                  <ProtectedRoute>
+                    <HistoryOrderPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <DashboardPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/products"
+                element={
+                  <ProtectedRoute>
+                    <ProductListPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/orders"
+                element={
+                  <ProtectedRoute>
+                    <OrderListPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/users"
+                element={
+                  <ProtectedRoute>
+                    <UserListPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Layout>
+        </div>
+      </OrderProvider>
+    </CartProvider>
   );
 }
 
