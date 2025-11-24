@@ -19,7 +19,7 @@ const MenuCard = ({ title, originalPrice, price, description, image, isFlashSale
           </span>
         )}
         <img
-          src={image}
+          src={image || 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'}
           alt={title}
           className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
         />
