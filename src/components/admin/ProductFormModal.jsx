@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { X, Trash2, Image as ImageIcon } from 'lucide-react';
+import { X, Trash2, Upload } from 'lucide-react';
 
 const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
   const [formData, setFormData] = useState({
     name: '',
     price: '',
     description: '',
-    images: [],
-    sizes: [],
-    stock: ''
+    category_id: '',
+    stock: '',
+    is_flash_sale: false,
+    is_favorite: false,
+    is_buy1get1: false
   });
 
-  const [previewImages, setPreviewImages] = useState([]);
+  const [imageFile, setImageFile] = useState(null);
+  const [previewImage, setPreviewImage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (product) {
@@ -19,203 +23,307 @@ const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
         name: product.name || '',
         price: product.price?.toString() || '',
         description: product.description || '',
-        images: product.image ? [product.image] : [],
-        sizes: product.sizes || ['R', 'L', 'XL'],
-        stock: product.stock?.toString() || '200'
+        category_id: product.category_id?.toString() || '',
+        stock: product.stock?.toString() || '',
+        is_flash_sale: product.is_flash_sale || product.isFlashSale || false,
+        is_favorite: product.is_favorite || product.isFavorite || false,
+        is_buy1get1: product.is_buy1get1 || product.isBuy1Get1 || false
       });
-      setPreviewImages(product.image ? [product.image] : []);
+      setPreviewImage(product.image_url || product.image || '');
+      setImageFile(null);
     } else {
       setFormData({
         name: '',
         price: '',
         description: '',
-        images: [],
-        sizes: [],
-        stock: ''
+        category_id: '1',
+        stock: '',
+        is_flash_sale: false,
+        is_favorite: false,
+        is_buy1get1: false
       });
-      setPreviewImages([]);
+      setPreviewImage('');
+      setImageFile(null);
     }
   }, [product, isOpen]);
 
   const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
-    const newImages = files.map(file => URL.createObjectURL(file));
-    setPreviewImages([...previewImages, ...newImages]);
-    setFormData({ ...formData, images: [...formData.images, ...files] });
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size must be less than 5MB');
+        return;
+      }
+
+      setImageFile(file);
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  const removeImage = (index) => {
-    const newPreviews = previewImages.filter((_, i) => i !== index);
-    const newImages = formData.images.filter((_, i) => i !== index);
-    setPreviewImages(newPreviews);
-    setFormData({ ...formData, images: newImages });
+  const removeImage = () => {
+    setImageFile(null);
+    setPreviewImage(product ? (product.image_url || product.image || '') : '');
   };
 
-  const toggleSize = (size) => {
-    const newSizes = formData.sizes.includes(size)
-      ? formData.sizes.filter(s => s !== size)
-      : [...formData.sizes, size];
-    setFormData({ ...formData, sizes: newSizes });
-  };
-
-  const handleSubmit = () => {
-    if (!formData.name || !formData.price) {
-      alert('Please fill in product name and price');
+  const handleSubmit = async () => {
+    if (!formData.name.trim()) {
+      alert('Please enter product name');
       return;
     }
-    onSave(formData);
-    onClose();
+
+    if (!formData.price || formData.price < 1000) {
+      alert('Price must be at least IDR 1,000');
+      return;
+    }
+
+    if (!formData.stock || formData.stock < 0) {
+      alert('Please enter valid stock');
+      return;
+    }
+
+    if (!formData.category_id) {
+      alert('Please select a category');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const submitData = new FormData();
+      submitData.append('name', formData.name.trim());
+      submitData.append('description', formData.description.trim());
+      submitData.append('category_id', formData.category_id);
+      submitData.append('price', formData.price);
+      submitData.append('stock', formData.stock);
+      submitData.append('is_flash_sale', formData.is_flash_sale.toString());
+      submitData.append('is_favorite', formData.is_favorite.toString());
+      submitData.append('is_buy1get1', formData.is_buy1get1.toString());
+
+      if (imageFile) {
+        submitData.append('image', imageFile);
+      }
+
+      await onSave(submitData);
+      
+      setFormData({
+        name: '',
+        price: '',
+        description: '',
+        category_id: '1',
+        stock: '',
+        is_flash_sale: false,
+        is_favorite: false,
+        is_buy1get1: false
+      });
+      setImageFile(null);
+      setPreviewImage('');
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('Failed to save product. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 w-full max-w-lg bg-white shadow-2xl z-50 overflow-y-auto border-l border-gray-200">
-      <div className="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 flex items-center justify-between z-10">
-        <h2 className="text-2xl font-bold text-gray-900">
-          {product ? 'Edit Product' : 'Add Product'}
-        </h2>
-        <button
-          onClick={onClose}
-          className="text-red-500 hover:text-red-600 transition-colors p-1"
-        >
-          <X className="w-6 h-6" />
-        </button>
-      </div>
+    <>
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50 z-40"
+        onClick={onClose}
+      />
 
-      <div className="px-8 py-6 space-y-6 pb-24">
-        <div>
-          <label className="block text-base font-semibold text-gray-900 mb-3">
-            Photo Product
-          </label>
-          
-          <div className="flex gap-3 mb-4">
-            {previewImages.map((img, index) => (
-              <div key={index} className="relative">
+      <div className="fixed inset-y-0 right-0 w-full max-w-lg bg-white shadow-2xl z-50 overflow-y-auto border-l border-gray-200">
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 flex items-center justify-between z-10">
+          <h2 className="text-2xl font-bold text-gray-900">
+            {product ? 'Edit Product' : 'Add Product'}
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-red-500 hover:text-red-600 transition-colors p-1"
+            disabled={loading}
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        <div className="px-8 py-6 space-y-6 pb-32">
+          <div>
+            <label className="block text-base font-semibold text-gray-900 mb-3">
+              Product Image
+            </label>
+            
+            {previewImage && (
+              <div className="relative mb-4 inline-block">
                 <img
-                  src={img}
-                  alt={`Preview ${index + 1}`}
-                  className="w-20 h-20 object-cover rounded-lg border border-gray-200"
+                  src={previewImage}
+                  alt="Preview"
+                  className="w-32 h-32 object-cover rounded-lg border-2 border-gray-200"
                 />
                 <button
                   type="button"
-                  onClick={() => removeImage(index)}
+                  onClick={removeImage}
                   className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 shadow-md"
+                  disabled={loading}
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
-            ))}
+            )}
+
+            <label className="cursor-pointer inline-block">
+              <span className="inline-flex items-center gap-2 bg-orange-500 text-white px-6 py-2.5 rounded-lg hover:bg-orange-600 transition-colors font-medium">
+                <Upload className="w-4 h-4" />
+                {previewImage ? 'Change Image' : 'Upload Image'}
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+                disabled={loading}
+              />
+            </label>
+            <p className="text-xs text-gray-500 mt-2">Max 5MB (JPG, PNG, WebP)</p>
           </div>
 
-          <label className="cursor-pointer">
-            <span className="inline-block bg-orange-500 text-white px-8 py-2.5 rounded-lg hover:bg-orange-600 transition-colors font-medium">
-              Upload
-            </span>
+          <div>
+            <label className="block text-base font-semibold text-gray-900 mb-3">
+              Product Name <span className="text-red-500">*</span>
+            </label>
             <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="hidden"
+              type="text"
+              placeholder="Enter Product Name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900"
+              disabled={loading}
             />
-          </label>
-        </div>
-
-        <div>
-          <label className="block text-base font-semibold text-gray-900 mb-3">
-            Product name
-          </label>
-          <input
-            type="text"
-            placeholder="Enter Product Name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 text-gray-900 placeholder-gray-400"
-          />
-        </div>
-
-        <div>
-          <label className="block text-base font-semibold text-gray-900 mb-3">
-            Price
-          </label>
-          <input
-            type="number"
-            placeholder="Enter Product Price"
-            value={formData.price}
-            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 text-gray-900 placeholder-gray-400"
-          />
-        </div>
-
-        <div>
-          <label className="block text-base font-semibold text-gray-900 mb-3">
-            Description
-          </label>
-          <textarea
-            placeholder="Enter Product Description"
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            rows="5"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 text-gray-900 placeholder-gray-400 resize-none"
-          />
-        </div>
-
-        <div>
-          <label className="block text-base font-semibold text-gray-900 mb-3">
-            Product Size
-          </label>
-          <div className="flex gap-3">
-            {['R', 'L', 'XL', '250 gr', '500gr'].map((size) => (
-              <button
-                key={size}
-                type="button"
-                onClick={() => toggleSize(size)}
-                className={`px-6 py-2.5 rounded-lg font-medium transition-colors ${
-                  formData.sizes.includes(size)
-                    ? 'bg-orange-500 text-white'
-                    : 'border border-gray-300 text-gray-700 hover:border-gray-400 bg-white'
-                }`}
-              >
-                {size}
-              </button>
-            ))}
           </div>
-        </div>
 
-        <div>
-          <label className="block text-base font-semibold text-gray-900 mb-3">
-            Stock
-          </label>
-          <div className="relative">
+          <div>
+            <label className="block text-base font-semibold text-gray-900 mb-3">
+              Category <span className="text-red-500">*</span>
+            </label>
             <select
+              value={formData.category_id}
+              onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-gray-900"
+              disabled={loading}
+            >
+              <option value="">Select Category</option>
+              <option value="1">Coffee</option>
+              <option value="2">Non Coffee</option>
+              <option value="3">Foods</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-base font-semibold text-gray-900 mb-3">
+              Price (IDR) <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              placeholder="Enter Product Price"
+              value={formData.price}
+              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900"
+              min="1000"
+              disabled={loading}
+            />
+          </div>
+
+          <div>
+            <label className="block text-base font-semibold text-gray-900 mb-3">
+              Stock <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              placeholder="Enter Product Stock"
               value={formData.stock}
               onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 appearance-none bg-white text-gray-900 cursor-pointer"
-            >
-              <option value="">Enter Product Stock</option>
-              <option value="50">50 Stock</option>
-              <option value="100">100 Stock</option>
-              <option value="200">200 Stock</option>
-              <option value="500">500 Stock</option>
-            </select>
-            <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900"
+              min="0"
+              disabled={loading}
+            />
+          </div>
+
+          <div>
+            <label className="block text-base font-semibold text-gray-900 mb-3">
+              Description
+            </label>
+            <textarea
+              placeholder="Enter Product Description"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              rows="4"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 resize-none"
+              disabled={loading}
+            />
+          </div>
+
+          <div>
+            <label className="block text-base font-semibold text-gray-900 mb-3">
+              Product Type
+            </label>
+            <div className="space-y-2">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.is_flash_sale}
+                  onChange={(e) => setFormData({ ...formData, is_flash_sale: e.target.checked })}
+                  className="w-5 h-5 text-orange-500 rounded focus:ring-orange-500"
+                  disabled={loading}
+                />
+                <span className="text-gray-700">Flash Sale</span>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.is_favorite}
+                  onChange={(e) => setFormData({ ...formData, is_favorite: e.target.checked })}
+                  className="w-5 h-5 text-orange-500 rounded focus:ring-orange-500"
+                  disabled={loading}
+                />
+                <span className="text-gray-700">Favorite Product</span>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.is_buy1get1}
+                  onChange={(e) => setFormData({ ...formData, is_buy1get1: e.target.checked })}
+                  className="w-5 h-5 text-orange-500 rounded focus:ring-orange-500"
+                  disabled={loading}
+                />
+                <span className="text-gray-700">Buy 1 Get 1</span>
+              </label>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="fixed bottom-0 right-0 w-full max-w-lg bg-white border-t border-gray-200 px-8 py-6">
-        <button
-          type="button"
-          onClick={handleSubmit}
-          className="w-full bg-orange-500 text-white py-3.5 rounded-lg font-semibold hover:bg-orange-600 transition-colors text-base"
-        >
-          {product ? 'Edit Save' : 'Save Product'}
-        </button>
+        <div className="fixed bottom-0 right-0 w-full max-w-lg bg-white border-t border-gray-200 px-8 py-6">
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={loading}
+            className="w-full bg-orange-500 text-white py-3.5 rounded-lg font-semibold hover:bg-orange-600 transition-colors text-base disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Saving...' : (product ? 'Update Product' : 'Save Product')}
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
