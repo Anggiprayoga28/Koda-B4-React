@@ -73,7 +73,7 @@ const RegisterPage = () => {
         formDataToSend.append('full_name', formData.fullName);
         formDataToSend.append('email', formData.email);
         formDataToSend.append('password', formData.password);
-        formDataToSend.append('role', 'customer'); 
+        formDataToSend.append('role', 'customer');
 
         const response = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/register`, {
           method: 'POST',
