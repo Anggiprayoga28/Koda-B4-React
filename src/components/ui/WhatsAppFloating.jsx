@@ -19,11 +19,11 @@ const WhatsAppFloating = () => {
     <>
       {isOpen && (
         <div className="fixed top-16 left-8 right-8 bottom-16 z-50 md:inset-auto md:bottom-24 md:right-6 md:w-80 md:h-auto bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[calc(100vh-8rem)]">
-          <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-4 flex-shrink-0">
+          <div className="bg-gradient-to-r from-#8E6447 to-#7A5538 p-4 flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="flex-1">
                 <h3 className="text-white text-base sm:text-lg font-semibold">Maria Angela</h3>
-                <p className="text-orange-100 text-xs sm:text-sm">Admin Support</p>
+                <p className="text-#F9F6F0 text-xs sm:text-sm">Admin Support</p>
               </div>
               <button 
                 onClick={() => setIsOpen(false)}
@@ -48,9 +48,9 @@ const WhatsAppFloating = () => {
             </div>
             
             <div className="flex justify-end mb-4 sm:mb-6">
-              <div className="bg-orange-500 p-3 sm:p-4 rounded-lg rounded-tr-none shadow-sm max-w-[75%]">
+              <div className="bg-#8E6447 p-3 sm:p-4 rounded-lg rounded-tr-none shadow-sm max-w-[75%]">
                 <p className="text-sm sm:text-base text-white">Saya kesulitan mencari kopi</p>
-                <span className="text-xs text-orange-100 mt-1 block text-right">10:31</span>
+                <span className="text-xs text-#F9F6F0 mt-1 block text-right">10:31</span>
               </div>
             </div>
           </div>
@@ -63,11 +63,11 @@ const WhatsAppFloating = () => {
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                 placeholder="Masukan Pesan Anda"
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm sm:text-base"
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-#8E6447 text-sm sm:text-base"
               />
               <button
                 onClick={handleSendMessage}
-                className="bg-orange-500 text-white p-3 rounded-lg hover:bg-orange-600 transition-colors flex-shrink-0"
+                className="bg-#8E6447 text-white p-3 rounded-lg hover:bg-#7A5538 transition-colors flex-shrink-0"
               >
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -80,7 +80,7 @@ const WhatsAppFloating = () => {
 
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 w-14 h-14 sm:w-16 sm:h-16 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-2xl flex items-center justify-center z-40 transition-all transform hover:scale-110"
+        className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 w-14 h-14 sm:w-16 sm:h-16 bg-#8E6447 hover:bg-#7A5538 text-white rounded-full shadow-2xl flex items-center justify-center z-40 transition-all transform hover:scale-110"
       >
         <img src="/ChatCircleDots.svg" alt="Logo chat" className="w-7 h-7 sm:w-8 sm:h-8" />
       </button>

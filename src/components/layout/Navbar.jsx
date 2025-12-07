@@ -1,25 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { Search, ShoppingCart, Menu, X, User, ChevronDown } from 'lucide-react';
 import Logo from '../ui/Logo';
-import api from '../../config/axiosConfig';
+import { logoutUser } from '../../redux/slices/authSlice';
+import { getCart } from '../../redux/slices/cartSlice';
+import { ToastContainer } from 'react-toastify';
 
-const Navbar = ({ user, onLogout }) => {
+const Navbar = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  const { user, isAuthenticated, token } = useSelector(state => state.auth);
+  
+  const { totalItems: cartCount } = useSelector(state => state.cart);
+  console.log(cartCount)
+  
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
-  const location = useLocation();
-  const navigate = useNavigate();
 
   const isActive = (path) => location.pathname === path;
 
   useEffect(() => {
-    if (user) {
-      fetchCartCount();
-    } else {
-      setCartCount(0);
-    }
-  }, [user, location.pathname]);
+    const fetchInitialData = async () => {
+      if (token) {
+        try {
+          await dispatch(getCart()).unwrap();
+        } catch (error) {
+          console.error('Failed to fetch cart:', error);
+        }
+      }
+    };
+
+    fetchInitialData();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -32,36 +47,27 @@ const Navbar = ({ user, onLogout }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isProfileDropdownOpen]);
 
-  const fetchCartCount = async () => {
-    try {
-      const response = await api.get('/cart');
-
-      if (response.data.success && response.data.data) {
-        const items = response.data.data.items || [];
-        const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-        setCartCount(totalItems);
-      }
-    } catch (error) {
-      console.error('Error fetching cart count:', error);
-      setCartCount(0);
-    }
-  };
-
   const handleProfileClick = () => {
     navigate('/profile');
     setIsProfileDropdownOpen(false);
   };
 
-  const handleLogout = () => {
-    onLogout();
-    setIsProfileDropdownOpen(false);
-    setIsMobileMenuOpen(false);
-    setCartCount(0);
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await dispatch(logoutUser()).unwrap();
+      setIsProfileDropdownOpen(false);
+      setIsMobileMenuOpen(false);
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      setIsProfileDropdownOpen(false);
+      setIsMobileMenuOpen(false);
+      navigate('/login');
+    }
   };
 
   const handleCartClick = () => {
-    if (!user) {
+    if (!isAuthenticated) {
       navigate('/login');
       return;
     }
@@ -70,6 +76,7 @@ const Navbar = ({ user, onLogout }) => {
 
   return (
     <>
+      <ToastContainer/>
       <nav className="bg-black border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -82,7 +89,7 @@ const Navbar = ({ user, onLogout }) => {
               <Link 
                 to="/"
                 className={`hover:text-white transition-colors font-medium pb-1 ${
-                  isActive('/') ? 'text-white border-b-2 border-orange-500' : 'text-gray-400'
+                  isActive('/') ? 'text-white border-b-2 border-#8E6447' : 'text-gray-400'
                 }`}
               >
                 Home
@@ -90,16 +97,16 @@ const Navbar = ({ user, onLogout }) => {
               <Link 
                 to="/product"
                 className={`hover:text-white transition-colors font-medium pb-1 ${
-                  isActive('/product') ? 'text-white border-b-2 border-orange-500' : 'text-gray-400'
+                  isActive('/product') ? 'text-white border-b-2 border-#8E6447' : 'text-gray-400'
                 }`}
               >
                 Product
               </Link>
-              {user && (
+              {isAuthenticated && user && (
                 <Link 
                   to="/history-order"
                   className={`hover:text-white transition-colors font-medium pb-1 ${
-                    isActive('/history-order') ? 'text-white border-b-2 border-orange-500' : 'text-gray-400'
+                    isActive('/history-order') ? 'text-white border-b-2 border-#8E6447' : 'text-gray-400'
                   }`}
                 >
                   History Order
@@ -118,13 +125,13 @@ const Navbar = ({ user, onLogout }) => {
               >
                 <ShoppingCart className="w-5 h-5" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  <span className="absolute -top-2 -right-2 bg-#8E6447 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                     {cartCount > 99 ? '99+' : cartCount}
                   </span>
                 )}
               </button>
 
-              {user ? (
+              {isAuthenticated && user ? (
                 <div className="relative profile-dropdown">
                   <button 
                     onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
@@ -137,7 +144,7 @@ const Navbar = ({ user, onLogout }) => {
                         className="w-10 h-10 rounded-full object-cover border-2 border-gray-600"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center border-2 border-gray-600">
+                      <div className="w-10 h-10 rounded-full bg-#8E6447 flex items-center justify-center border-2 border-gray-600">
                         <User className="w-6 h-6 text-white" />
                       </div>
                     )}
@@ -147,7 +154,7 @@ const Navbar = ({ user, onLogout }) => {
                   {isProfileDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-gray-900 rounded-lg shadow-lg border border-gray-700 py-2 z-50">
                       <div className="px-4 py-2 border-b border-gray-700">
-                        <p className="text-sm font-semibold text-white truncate">{user.fullName}</p>
+                        <p className="text-sm font-semibold text-white truncate">{user.fullName || user.email}</p>
                         <p className="text-xs text-gray-400 truncate">{user.email}</p>
                       </div>
                       <button
@@ -186,7 +193,7 @@ const Navbar = ({ user, onLogout }) => {
                   </Link>
                   <Link 
                     to="/register"
-                    className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors font-semibold"
+                    className="bg-#8E6447 text-white px-6 py-2 rounded-lg hover:bg-#7A5538 transition-colors font-semibold"
                   >
                     Sign Up
                   </Link>
@@ -230,7 +237,7 @@ const Navbar = ({ user, onLogout }) => {
                 <input
                   type="text"
                   placeholder="Find Product"
-                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-#8E6447 focus:border-transparent"
                 />
               </div>
             </div>
@@ -240,8 +247,8 @@ const Navbar = ({ user, onLogout }) => {
                 to="/" 
                 className={`block py-3 px-2 text-base font-medium transition-colors ${
                   isActive('/') 
-                    ? 'text-gray-900 border-b-2 border-orange-500' 
-                    : 'text-gray-700 hover:text-orange-500'
+                    ? 'text-gray-900 border-b-2 border-#8E6447' 
+                    : 'text-gray-700 hover:text-#8E6447'
                 }`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
@@ -251,14 +258,14 @@ const Navbar = ({ user, onLogout }) => {
                 to="/product" 
                 className={`block py-3 px-2 text-base font-medium transition-colors ${
                   isActive('/product') 
-                    ? 'text-gray-900 border-b-2 border-orange-500' 
-                    : 'text-gray-700 hover:text-orange-500'
+                    ? 'text-gray-900 border-b-2 border-#8E6447' 
+                    : 'text-gray-700 hover:text-#8E6447'
                 }`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Product
               </Link>
-              {user && (
+              {isAuthenticated && user && (
                 <>
                   <button
                     onClick={() => {
@@ -267,13 +274,13 @@ const Navbar = ({ user, onLogout }) => {
                     }}
                     className={`flex items-center justify-between w-full py-3 px-2 text-base font-medium transition-colors ${
                       isActive('/cart') 
-                        ? 'text-gray-900 border-b-2 border-orange-500' 
-                        : 'text-gray-700 hover:text-orange-500'
+                        ? 'text-gray-900 border-b-2 border-#8E6447' 
+                        : 'text-gray-700 hover:text-#8E6447'
                     }`}
                   >
                     <span>Cart</span>
                     {cartCount > 0 && (
-                      <span className="bg-orange-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                      <span className="bg-#8E6447 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
                         {cartCount > 99 ? '99+' : cartCount}
                       </span>
                     )}
@@ -282,8 +289,8 @@ const Navbar = ({ user, onLogout }) => {
                     to="/history-order" 
                     className={`block py-3 px-2 text-base font-medium transition-colors ${
                       isActive('/history-order') 
-                        ? 'text-gray-900 border-b-2 border-orange-500' 
-                        : 'text-gray-700 hover:text-orange-500'
+                        ? 'text-gray-900 border-b-2 border-#8E6447' 
+                        : 'text-gray-700 hover:text-#8E6447'
                     }`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
@@ -293,8 +300,8 @@ const Navbar = ({ user, onLogout }) => {
                     to="/profile" 
                     className={`block py-3 px-2 text-base font-medium transition-colors ${
                       isActive('/profile') 
-                        ? 'text-gray-900 border-b-2 border-orange-500' 
-                        : 'text-gray-700 hover:text-orange-500'
+                        ? 'text-gray-900 border-b-2 border-#8E6447' 
+                        : 'text-gray-700 hover:text-#8E6447'
                     }`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
@@ -305,8 +312,8 @@ const Navbar = ({ user, onLogout }) => {
                       to="/dashboard" 
                       className={`block py-3 px-2 text-base font-medium transition-colors ${
                         isActive('/dashboard') 
-                          ? 'text-gray-900 border-b-2 border-orange-500' 
-                          : 'text-gray-700 hover:text-orange-500'
+                          ? 'text-gray-900 border-b-2 border-#8E6447' 
+                          : 'text-gray-700 hover:text-#8E6447'
                       }`}
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
@@ -318,7 +325,7 @@ const Navbar = ({ user, onLogout }) => {
             </div>
 
             <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200">
-              {user ? (
+              {isAuthenticated && user ? (
                 <>
                   <div className="mb-4 pb-4 border-b border-gray-200">
                     <div className="flex items-center gap-3">
@@ -329,12 +336,12 @@ const Navbar = ({ user, onLogout }) => {
                           className="w-12 h-12 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-full bg-#8E6447 flex items-center justify-center">
                           <User className="w-6 h-6 text-white" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-900 truncate">{user.fullName}</p>
+                        <p className="text-sm font-semibold text-gray-900 truncate">{user.fullName || user.email}</p>
                         <p className="text-xs text-gray-500 truncate">{user.email}</p>
                       </div>
                     </div>
@@ -357,7 +364,7 @@ const Navbar = ({ user, onLogout }) => {
                   </Link>
                   <Link 
                     to="/register"
-                    className="block w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-3 rounded-lg text-center font-semibold transition-colors"
+                    className="block w-full bg-#8E6447 hover:bg-#7A5538 text-white px-4 py-3 rounded-lg text-center font-semibold transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Sign Up

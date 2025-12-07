@@ -44,7 +44,7 @@ const InputField = ({
           disabled={disabled}
           className={`w-full ${Icon ? 'pl-12' : 'px-4'} ${type === 'password' || rightElement ? 'pr-12' : 'pr-4'} py-4 ${
             disabled ? 'bg-gray-50 text-gray-600' : 'bg-gray-50'
-          } border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all text-gray-700 placeholder-gray-400 disabled:cursor-not-allowed text-base`}
+          } border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#8E6447] focus:border-transparent transition-all text-gray-700 placeholder-gray-400 disabled:cursor-not-allowed text-base`}
         />
         {type === 'password' && (
           <button

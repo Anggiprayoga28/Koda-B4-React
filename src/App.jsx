@@ -19,7 +19,7 @@ import ProductListPage from './pages/ProductListPage';
 import OrderListPage from './pages/OrderListPage';
 import UserListPage from './pages/UserListPage';
 import Notification from './components/ui/Notification';
-import { logoutUser } from './redux/authActions';
+import { logoutUser } from './redux/slices/authSlice';
 import CartPage from './pages/cart/CartPage';
 import CheckoutPage from './pages/checkoutPage';
 import ProductPaymentDetails from './components/ProductPaymentDetails';
@@ -122,7 +122,7 @@ function App() {
                 path="/payment-detail"
                 element={
                   <ProtectedRoute>
-                    <ProductPaymentDetails />
+                    <CheckoutPage />
                   </ProtectedRoute>
                 }
               />

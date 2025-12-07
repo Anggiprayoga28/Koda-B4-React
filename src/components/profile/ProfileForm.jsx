@@ -42,7 +42,7 @@ const ProfileForm = ({ profileData, setProfileData, isEditing, setIsEditing, onS
             <button 
               type="button"
               onClick={onPasswordClick}
-              className="text-orange-500 text-sm font-medium hover:underline"
+              className="text-#8E6447 text-sm font-medium hover:underline"
             >
               Set New Password
             </button>

@@ -27,7 +27,7 @@ const FormModal = ({
       <div className="fixed bottom-0 right-0 w-full ${maxWidth} bg-white border-t border-gray-200 px-8 py-6">
         <button
           onClick={onSubmit}
-          className="w-full bg-orange-500 text-white py-3.5 rounded-lg font-semibold hover:bg-orange-600 transition-colors"
+          className="w-full bg-#8E6447 text-white py-3.5 rounded-lg font-semibold hover:bg-#7A5538 transition-colors"
         >
           {submitText}
         </button>

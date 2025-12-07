@@ -119,11 +119,11 @@ const ProductListPage = () => {
       header: "Image",
       render: (product) => (
         <img 
-          src={product.image || '/placeholder.png'} 
+          src={product.image || 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg'} 
           alt={product.name}
           className="w-16 h-16 object-cover rounded-lg"
           onError={(e) => {
-            e.target.src = '/placeholder.png';
+            e.target.src = 'https://www.svgrepo.com/show/508699/landscape-placeholder.svg';
           }}
         />
       )
@@ -190,7 +190,7 @@ const ProductListPage = () => {
       header: "Rating",
       render: (product) => (
         <div className="flex items-center gap-1">
-          <span className="text-yellow-500">⭐</span>
+          <span className="text-yellow-500">â­</span>
           <span className="text-sm">{product.rating || '5.0'}</span>
         </div>
       )

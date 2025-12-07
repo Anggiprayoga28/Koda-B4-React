@@ -1,5 +1,10 @@
+// axiosConfig.js (atau nama file kamu)
+
 import axios from 'axios';
-import { getToken, clearUserSession } from '../utils/authUtils';
+import { clearUserSession } from '../utils/authUtils';
+// ⛔ HAPUS hook dari sini
+// import { useSelector } from 'react-redux';
+import { store } from '../redux/store';
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -12,8 +17,10 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const token = getToken();
-    
+    // ✅ AMBIL STATE LEWAT STORE, BUKAN HOOK
+    const state = store.getState();
+    const token = state?.auth?.token;
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

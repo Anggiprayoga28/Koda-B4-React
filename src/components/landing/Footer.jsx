@@ -15,32 +15,32 @@ const Footer = () => (
         <div>
           <h3 className="font-bold mb-3 sm:mb-4 text-sm sm:text-base">Product</h3>
           <ul className="space-y-2 text-xs sm:text-sm text-gray-600">
-            <li><a href="#" className="hover:text-orange-500">Download</a></li>
-            <li><a href="#" className="hover:text-orange-500">Pricing</a></li>
-            <li><a href="#" className="hover:text-orange-500">Location</a></li>
-            <li><a href="#" className="hover:text-orange-500">Countries</a></li>
-            <li><a href="#" className="hover:text-orange-500">Blog</a></li>
+            <li><a href="#" className="hover:text-#8E6447">Download</a></li>
+            <li><a href="#" className="hover:text-#8E6447">Pricing</a></li>
+            <li><a href="#" className="hover:text-#8E6447">Location</a></li>
+            <li><a href="#" className="hover:text-#8E6447">Countries</a></li>
+            <li><a href="#" className="hover:text-#8E6447">Blog</a></li>
           </ul>
         </div>
         <div>
           <h3 className="font-bold mb-3 sm:mb-4 text-sm sm:text-base">Engage</h3>
           <ul className="space-y-2 text-xs sm:text-sm text-gray-600">
-            <li><a href="#" className="hover:text-orange-500">Coffee Shop</a></li>
-            <li><a href="#" className="hover:text-orange-500">FAQ</a></li>
-            <li><a href="#" className="hover:text-orange-500">About Us</a></li>
-            <li><a href="#" className="hover:text-orange-500">Privacy Policy</a></li>
-            <li><a href="#" className="hover:text-orange-500">Terms of Service</a></li>
+            <li><a href="#" className="hover:text-#8E6447">Coffee Shop</a></li>
+            <li><a href="#" className="hover:text-#8E6447">FAQ</a></li>
+            <li><a href="#" className="hover:text-#8E6447">About Us</a></li>
+            <li><a href="#" className="hover:text-#8E6447">Privacy Policy</a></li>
+            <li><a href="#" className="hover:text-#8E6447">Terms of Service</a></li>
           </ul>
         </div>
         <div>
           <div className="flex gap-3 mt-0 sm:mt-4">
-            <button className="w-9 h-9 sm:w-10 sm:h-10 bg-orange-400 rounded-full flex items-center justify-center text-black hover:bg-orange-500">
+            <button className="w-9 h-9 sm:w-10 sm:h-10 bg-#C5A053 rounded-full flex items-center justify-center text-black hover:bg-#8E6447">
               <Facebook size={16} strokeWidth={0.5} absoluteStrokeWidth />
             </button>
-            <button className="w-9 h-9 sm:w-10 sm:h-10 bg-orange-400 rounded-full flex items-center justify-center text-black hover:bg-orange-500">
+            <button className="w-9 h-9 sm:w-10 sm:h-10 bg-#C5A053 rounded-full flex items-center justify-center text-black hover:bg-#8E6447">
               <Twitter size={16} strokeWidth={0.5} absoluteStrokeWidth />
             </button>
-            <button className="w-9 h-9 sm:w-10 sm:h-10 bg-orange-400 rounded-full flex items-center justify-center text-black hover:bg-orange-500">
+            <button className="w-9 h-9 sm:w-10 sm:h-10 bg-#C5A053 rounded-full flex items-center justify-center text-black hover:bg-#8E6447">
               <Instagram size={16} strokeWidth={0.5} absoluteStrokeWidth />
             </button>
           </div>

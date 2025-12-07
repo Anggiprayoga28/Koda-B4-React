@@ -1,474 +1,533 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { Minus, Plus, ShoppingCart, Star, AlertCircle } from "lucide-react";
+import { toast } from "react-toastify";
 
-import { useCart } from "../contexts/CartContext";
-import Notification from "../components/ui/Notification";
-import {
-  getCart as getCartAPI,
-  checkout as checkoutAPI,
-} from "../services/apiService";
+import MenuCard from "../components/landing/MenuCard";
+import Pagination from "../components/admin/Pagination";
+import { ProductImage } from "../components/landing/ProductImage";
 
-const ProductPaymentDetails = () => {
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const { removeFromCart, clearCart } = useCart();
+import { getProductDetail, clearProductDetail } from "../redux/slices/productSlice";
+import { addToCart } from "../redux/slices/cartSlice";
 
-  const [cart, setCart] = useState([]);
-  const [customerInfo, setCustomerInfo] = useState({
-    email: "",
-    fullName: "",
-    address: "",
-    delivery: "Dine in",
+const formatPrice = (price) => {
+  return `IDR ${price?.toLocaleString("id-ID") || 0}`;
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("id-ID", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
-  
-  const [notification, setNotification] = useState(null);
-  const [loading, setLoading] = useState(true);
+};
+
+const ProductDetailPage = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const { token } = useSelector((state) => state.auth);
+  const {
+    currentProduct: product,
+    images,
+    sizes,
+    temperatures,
+    reviews,
+    recommendations,
+    averageRating,
+    totalReviews,
+    detailLoading: loading,
+    detailError: error,
+  } = useSelector((state) => state.product);
+  console.log(product)
+
+  const { loading: cartLoading } = useSelector((state) => state.cart);
+
+  const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedTemp, setSelectedTemp] = useState(null);
+  const [selectedSizeId, setSelectedSizeId] = useState(null);
+  const [selectedTempId, setSelectedTempId] = useState(null);
+  const [currentImage, setCurrentImage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 3;
 
   useEffect(() => {
-    const fetchCart = async () => {
-      setNotification(null);
-      setLoading(true);
-      try {
-        const result = await getCartAPI(); 
-        console.log('Raw cart data from API:', result);
-        
-        const backendItems = result?.items || [];
+    if (id) {
+      dispatch(getProductDetail(id));
+    }
 
-        const mapped = backendItems.map((item) => {
-          console.log('Mapping item:', item);
-          
-          const quantity = item.quantity ?? 1;
-          
-          const unitPrice = 
-            item.unitPrice ?? 
-            item.unit_price ?? 
-            item.basePrice ?? 
-            item.base_price ?? 
-            item.price ?? 
-            item.subtotal / quantity ?? 
-            item.totalPrice / quantity ?? 
-            item.total_price / quantity ?? 
-            0;
-
-          console.log('Extracted unitPrice:', unitPrice);
-
-          return {
-            cartId: item.cartId || item.cartID || item.id,
-            productId: item.productId || item.product_id,
-            name: item.name || item.product?.name || 'Unknown Product',
-            quantity,
-            size: item.size || "-",
-            temp: item.temperature || item.temp || "-",
-            image: item.imageUrl || item.image_url || item.image || "/placeholder-product.png",
-            isFlashSale: item.isFlashSale || item.is_flash_sale || false,
-            originalPrice: item.originalPrice || item.original_price || 0,
-            price: unitPrice,
-          };
-        });
-
-        console.log('Mapped cart:', mapped);
-        setCart(mapped);
-      } catch (error) {
-        console.error("Error fetching cart:", error);
-        setNotification({
-          type: "error",
-          message: error.response?.data?.message || "Failed to load cart",
-        });
-        setCart([]);
-      } finally {
-        setLoading(false);
-      }
+    return () => {
+      dispatch(clearProductDetail());
     };
+  }, [id, dispatch]);
 
-    fetchCart();
+  useEffect(() => {
+    if (sizes?.length > 0 && !selectedSizeId) {
+      const defaultSize = sizes[0];
+      setSelectedSize(defaultSize.name);
+      setSelectedSizeId(defaultSize.id);
+    }
+
+    if (temperatures?.length > 0 && !selectedTempId) {
+      const defaultTemp = temperatures[0];
+      setSelectedTemp(defaultTemp.name);
+      setSelectedTempId(defaultTemp.id);
+    }
+  }, [sizes, temperatures, selectedSizeId, selectedTempId]);
+
+  useEffect(() => {
+    if (product) {
+      document.title = `${product.name} - Coffee Shop`;
+    }
+    return () => {
+      document.title = "Coffee Shop";
+    };
+  }, [product]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+    setQuantity(1);
+    setCurrentImage(0);
+    setSelectedSizeId(null);
+    setSelectedTempId(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [id]);
+
+  const productImages = useMemo(() => {
+    if (images?.length > 0) {
+      return images.map((img) => img.url).filter(Boolean);
+    }
+
+    if (product?.image_url) {
+      return [product.image_url];
+    }
+
+    return ["https://www.svgrepo.com/show/508699/landscape-placeholder.svg"];
+  }, [images, product]);
+
+  const totalPages = Math.ceil(recommendations.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentRecommendations = recommendations.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
+
+  const handleQuantityChange = useCallback(
+    (delta) => {
+      if (!product) return;
+
+      const newQuantity = quantity + delta;
+      if (newQuantity < 1) return;
+      if (product.stock && newQuantity > product.stock) {
+        toast.warning(`Only ${product.stock} items available`);
+        return;
+      }
+      setQuantity(newQuantity);
+    },
+    [product, quantity]
+  );
+
+  const handleSizeChange = useCallback((size) => {
+    setSelectedSize(size.name);
+    setSelectedSizeId(size.id);
   }, []);
 
-  useEffect(() => {
-    if (notification) {
-      const timer = setTimeout(() => setNotification(null), 3000);
-      return () => clearTimeout(timer);
+  const handleTempChange = useCallback((temp) => {
+    setSelectedTemp(temp.name);
+    setSelectedTempId(temp.id);
+  }, []);
+
+  const calculateFinalPrice = useCallback(() => {
+    if (!product) return 0;
+
+    let price = product.price || 0;
+
+    const selectedSizeObj = sizes.find((s) => s.id === selectedSizeId);
+    if (selectedSizeObj?.priceAdjustment) {
+      price += selectedSizeObj.priceAdjustment;
     }
-  }, [notification]);
 
-  const showNotification = (message, type = "success") => {
-    setNotification({ message, type });
+    return price;
+  }, [product, sizes, selectedSizeId]);
+
+  const finalPrice = calculateFinalPrice();
+
+  const handleRecommendationClick = (productId) => {
+    navigate(`/product/${productId}`);
   };
 
-  const handleBackToProduct = () => {
-    const params = Object.fromEntries(searchParams.entries());
-    delete params.payment;
-    setSearchParams(params);
-    navigate("/product");
-  };
+  const handleAddToCart = async () => {
+    if (cartLoading) return;
 
-  const handleRemoveItem = async (cartId) => {
+    if (!token) {
+      toast.error("Please login to add items to cart");
+      navigate("/login");
+      return;
+    }
+
+    if (!product) {
+      toast.error("Product information not available");
+      return;
+    }
+
+    const cartItem = {
+      productId: product.id,
+      quantity,
+      sizeId: selectedSizeId,
+      temperatureId: selectedTempId,
+    };
+
     try {
-      await removeFromCart(cartId);
-      setCart((prev) => prev.filter((item) => item.cartId !== cartId));
-      showNotification("Item removed successfully");
+      const result = await dispatch(addToCart(cartItem)).unwrap();
+      toast.success(result.message || "Product added to cart!");
     } catch (error) {
-      console.error("Error removing item:", error);
-      showNotification("Failed to remove item", "error");
+      toast.error(error || "Failed to add to cart. Please try again.");
     }
   };
 
-  const calculateTotal = () => {
-    const orderTotal =
-      cart?.reduce((sum, item) => {
-        const price = item.price ?? 0;
-        const qty = item.quantity ?? 1;
-        return sum + price * qty;
-      }, 0) || 0;
-
-    const delivery = 0;
-    const tax = orderTotal * 0.1;
-    return { orderTotal, delivery, tax, subTotal: orderTotal + delivery + tax };
-  };
-
-  const mapDeliveryMethod = (delivery) => {
-    if (!delivery) return "dine_in";
-    const lower = delivery.toLowerCase();
-    if (lower.includes("door")) return "door_delivery";
-    if (lower.includes("pick")) return "pick_up";
-    return "dine_in";
-  };
-
-  const handleCheckout = async () => {
-    if (!cart || cart.length === 0) {
-      showNotification("Your cart is empty", "error");
-      return;
-    }
-
-    if (
-      !customerInfo.fullName.trim() ||
-      !customerInfo.email.trim() ||
-      !customerInfo.address.trim() ||
-      !customerInfo.delivery.trim()
-    ) {
-      showNotification("Please fill in all customer information", "error");
+  const handleBuyNow = async () => {
+    if (!token) {
+      toast.error("Please login to continue");
+      navigate("/login");
       return;
     }
 
     try {
-      const payload = {
-        email: customerInfo.email,
-        fullName: customerInfo.fullName,
-        address: customerInfo.address,
-        deliveryMethod: mapDeliveryMethod(customerInfo.delivery),
-        paymentMethodId: 1,
-      };
-
-      const result = await checkoutAPI(payload);
-
-      showNotification(
-        result?.message || "Checkout success, your order has been created!"
-      );
-
-      setCart([]);
-      clearCart();
-
+      await handleAddToCart();
       setTimeout(() => {
-        navigate("/history-order");
-      }, 1500);
+        navigate("/cart");
+      }, 500);
     } catch (error) {
-      console.error("Checkout error:", error);
-      showNotification(
-        error.response?.data?.message || "Failed to checkout",
-        "error"
-      );
+      console.error("Buy now error:", error);
     }
   };
 
-  if (loading) {
+  if (loading && !product) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 pt-20">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4" />
-          <p className="text-gray-500">Loading cart...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#8E6447]500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading product details...</p>
         </div>
       </div>
     );
   }
 
-  const totals = calculateTotal();
+  if (error && !product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 pt-20">
+        <div className="text-center max-w-md px-4">
+          <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-12 h-12 text-red-500" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Product Not Found</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button
+            onClick={() => navigate("/products")}
+            className="px-6 py-3 bg-[#8E6447]500 text-white rounded-lg hover:bg-[#8E6447]600 transition"
+          >
+            Back to Products
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return null;
+  }
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      {notification && (
-        <Notification message={notification.message} type={notification.type} />
-      )}
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl mb-6 sm:mb-8">
-          Payment Details
-        </h1>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-          <div className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl font-semibold">Your Order</h2>
-              <button
-                onClick={handleBackToProduct}
-                className="bg-[#6B727C] text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-[#A5A58D] flex items-center gap-2 text-sm sm:text-base"
-              >
-                + Add Menu
-              </button>
-            </div>
-
-            {!cart || cart.length === 0 ? (
-              <div className="bg-white rounded-lg p-6 sm:p-8 text-center">
-                <p className="text-gray-500 mb-4">Your cart is empty</p>
-                <button
-                  onClick={handleBackToProduct}
-                  className="bg-[#6B727C] text-white px-6 py-2 rounded-lg hover:bg-[#A5A58D]"
-                >
-                  Browse Products
-                </button>
+    <div className="min-h-screen bg-gray-50 pt-20 pb-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 lg:p-10">
+            <div className="space-y-4">
+              <div className="aspect-square rounded-xl overflow-hidden bg-gray-100">
+                <ProductImage
+                  src={product.image_url}
+                  alt={product.name}
+                  className="w-full h-full object-cover"
+                />
               </div>
-            ) : (
-              cart.map((item) => {
-                const itemTotal = (item.price || 0) * (item.quantity || 1);
-                
-                return (
-                  <div
-                    key={item.cartId}
-                    className="bg-[#E8E8E84D] p-3 sm:p-4 mb-3 sm:mb-4 flex items-center gap-3 sm:gap-4 rounded-lg"
-                  >
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-20 h-20 sm:w-32 sm:h-32 object-cover rounded"
-                      onError={(e) => {
-                        e.target.src = "/placeholder-product.png";
-                      }}
-                    />
-                    <div className="flex-1 min-w-0">
-                      {item.isFlashSale && (
-                        <span className="bg-red-600 text-white px-2 sm:px-3 py-0.5 sm:py-1 text-xs rounded-xl inline-block mb-1 sm:mb-2">
-                          FLASH SALE!
-                        </span>
-                      )}
-                      <h3 className="font-bold text-base sm:text-lg mb-1 truncate">
-                        {item.name}
-                      </h3>
-                      <p className="text-[#4F5665] text-sm sm:text-lg mb-1 sm:mb-2">
-                        {item.quantity}pcs | {item.size} | {item.temp} |{" "}
-                        {customerInfo.delivery}
-                      </p>
-                      <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                        {item.originalPrice > 0 && item.originalPrice !== item.price && (
-                          <span className="text-red-600 line-through text-xs sm:text-sm">
-                            IDR {(item.originalPrice * item.quantity).toLocaleString()}
-                          </span>
-                        )}
-                        <span className="text-[#6B727C] text-lg sm:text-xl font-semibold">
-                          IDR {itemTotal.toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
+
+              {productImages.length > 1 && (
+                <div className="grid grid-cols-4 gap-3">
+                  {productImages.map((img, index) => (
                     <button
-                      onClick={() => handleRemoveItem(item.cartId)}
-                      className="text-red-500 hover:text-red-700 w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center flex-shrink-0"
+                      key={index}
+                      onClick={() => setCurrentImage(index)}
+                      className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                        currentImage === index
+                          ? "border-[#8E6447]500 ring-2 ring-[#8E6447]200"
+                          : "border-gray-200 hover:border-[#8E6447]300"
+                      }`}
                     >
-                      <img
-                        src="/XCircle.svg"
-                        alt="Remove"
-                        className="w-full h-full"
+                      <ProductImage
+                        src={img}
+                        alt={`${product.name} ${index + 1}`}
+                        className="w-full h-full object-cover"
                       />
                     </button>
-                  </div>
-                );
-              })
-            )}
-
-            <div className="mt-6 sm:mt-8">
-              <h2 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">
-                Payment Info & Delivery
-              </h2>
-
-              <div className="space-y-3 sm:space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Email
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="email"
-                      placeholder="Enter Your Email"
-                      value={customerInfo.email}
-                      onChange={(e) =>
-                        setCustomerInfo({
-                          ...customerInfo,
-                          email: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg pl-10 text-sm sm:text-base"
-                    />
-                    <img
-                      src="/mail.svg"
-                      className="w-4 h-4 sm:w-5 sm:h-5 absolute left-3 top-3 sm:top-4 text-gray-400"
-                      alt="mail"
-                    />
-                  </div>
+                  ))}
                 </div>
+              )}
+            </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Full Name
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Enter Your Full Name"
-                      value={customerInfo.fullName}
-                      onChange={(e) =>
-                        setCustomerInfo({
-                          ...customerInfo,
-                          fullName: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg pl-10 text-sm sm:text-base"
-                    />
-                    <img
-                      src="/Profile.svg"
-                      className="w-4 h-4 sm:w-5 sm:h-5 absolute left-3 top-3 sm:top-4 text-gray-400"
-                      alt="profile"
-                    />
-                  </div>
+            <div className="flex flex-col">
+              {product.is_flash_sale && (
+                <div className="inline-flex items-center gap-2 bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-medium mb-3 w-fit">
+                  ⚡ Flash Sale
                 </div>
+              )}
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Address
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Enter Your Address"
-                      value={customerInfo.address}
-                      onChange={(e) =>
-                        setCustomerInfo({
-                          ...customerInfo,
-                          address: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg pl-10 text-sm sm:text-base"
+              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
+                {product.name}
+              </h1>
+
+              <div className="text-3xl font-bold text-[#8E6447]500 mb-4">
+                {formatPrice(finalPrice)}
+                {product.is_flash_sale && product.originalPrice && (
+                  <span className="text-lg text-gray-400 line-through ml-3">
+                    {formatPrice(product.originalPrice)}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-5 h-5 ${
+                        i < Math.floor(averageRating)
+                          ? "fill-orange-400 text-[#8E6447]400"
+                          : "fill-gray-200 text-gray-200"
+                      }`}
                     />
-                    <img
-                      src="/Location.svg"
-                      className="w-4 h-4 sm:w-5 sm:h-5 absolute left-3 top-3 sm:top-4 text-gray-400"
-                      alt="location"
-                    />
-                  </div>
+                  ))}
                 </div>
+                <span className="text-gray-600">
+                  {averageRating.toFixed(1)}
+                </span>
+                <span className="text-gray-400">•</span>
+                <span className="text-gray-600">
+                  {totalReviews || 0} Review{totalReviews !== 1 ? "s" : ""}
+                </span>
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Delivery
+              {product.stock !== undefined && (
+                <div className="mb-4">
+                  <span
+                    className={`text-sm font-medium ${
+                      product.stock > 10
+                        ? "text-green-600"
+                        : product.stock > 0
+                          ? "text-[#8E6447]600"
+                          : "text-red-600"
+                    }`}
+                  >
+                    {product.stock > 0
+                      ? `Stock: ${product.stock} available`
+                      : "Out of Stock"}
+                  </span>
+                </div>
+              )}
+
+              <div className="mb-6">
+                <p className="text-gray-600 leading-relaxed">
+                  {product.description}
+                </p>
+                <p className="text-sm text-gray-500 mt-2">
+                  <em>
+                    Note: Items may arrive less cold due to delivery time.
+                    Product look may vary due to delivery.
+                  </em>
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Quantity
+                </label>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => handleQuantityChange(-1)}
+                    disabled={quantity <= 1}
+                    className="w-10 h-10 border-2 border-[#8E6447] text-[#0B0909] flex items-center justify-center hover:bg-[#8E6447]50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-lg"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="text-lg w-12 text-center font-medium">
+                    {quantity}
+                  </span>
+                  <button
+                    onClick={() => handleQuantityChange(1)}
+                    disabled={product.stock && quantity >= product.stock}
+                    className="w-10 h-10 bg-[#8E6447] text-[#0B0909] flex items-center justify-center hover:bg-[#8E6447]600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-lg"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {sizes.length > 0 && (
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Choose Size
                   </label>
-                  <div className="grid grid-cols-3 gap-2 sm:gap-4">
-                    {["Dine in", "Door Delivery", "Pick Up"].map((method) => (
+                  <div className="grid grid-cols-3 gap-3">
+                    {sizes.map((size) => (
                       <button
-                        key={method}
-                        onClick={() =>
-                          setCustomerInfo({
-                            ...customerInfo,
-                            delivery: method,
-                          })
-                        }
-                        className={`border-2 px-2 sm:px-4 py-2 sm:py-3 rounded-lg font-medium text-xs sm:text-base ${
-                          customerInfo.delivery === method
-                            ? "border-[#6B727C] bg-white text-[#0B0909]"
-                            : "border-gray-300 hover:border-gray-400"
+                        key={size.id}
+                        onClick={() => handleSizeChange(size)}
+                        className={`py-3 px-4 text-sm font-medium rounded-lg transition-colors ${
+                          selectedSizeId === size.id
+                            ? "bg-[#8E6447]50 ring-2 ring-[#8E6447] text-[#0B0909]"
+                            : "bg-white ring-2 ring-gray-300 text-gray-700 hover:ring-[#8E6447]300"
                         }`}
                       >
-                        {method}
+                        <div className="font-medium">{size.name}</div>
+                        {size.priceAdjustment > 0 && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            +{formatPrice(size.priceAdjustment)}
+                          </div>
+                        )}
                       </button>
                     ))}
                   </div>
                 </div>
+              )}
+
+              {temperatures.length > 0 && (
+                <div className="mb-8">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Temperature
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {temperatures.map((temp) => (
+                      <button
+                        key={temp.id}
+                        onClick={() => handleTempChange(temp)}
+                        className={`py-3 px-4 text-sm font-medium rounded-lg transition-colors ${
+                          selectedTempId === temp.id
+                            ? "bg-[#8E6447]50 ring-2 ring-[#8E6447] text-[#0B0909]"
+                            : "bg-white ring-2 ring-gray-300 text-gray-700 hover:ring-[#8E6447]300"
+                        }`}
+                      >
+                        {temp.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  onClick={handleBuyNow}
+                  disabled={product.stock === 0 || cartLoading}
+                  className="bg-[#8E6447] hover:bg-[#8E6447]600 text-white py-3 font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {cartLoading ? "Processing..." : "Buy Now"}
+                </button>
+                <button
+                  onClick={handleAddToCart}
+                  disabled={product.stock === 0 || cartLoading}
+                  className="ring-2 ring-[#8E6447]500 text-[#8E6447]500 hover:bg-[#8E6447]50 py-3 font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ShoppingCart className="w-5 h-5" />
+                  <span>{cartLoading ? "Adding..." : "Add to Cart"}</span>
+                </button>
               </div>
             </div>
           </div>
 
-          <div>
-            <h3 className="text-lg sm:text-xl mb-4 sm:mb-6">Total</h3>
-            <div className="bg-[#E8E8E84D] p-4 sm:p-6 sticky top-4">
-              <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
-                <div className="flex justify-between text-sm sm:text-base">
-                  <span className="text-gray-600">Order</span>
-                  <span className="font-semibold">
-                    Idr. {totals.orderTotal.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm sm:text-base">
-                  <span className="text-gray-600">Delivery</span>
-                  <span className="font-semibold">
-                    Idr. {totals.delivery.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm sm:text-base">
-                  <span className="text-gray-600">Tax</span>
-                  <span className="font-semibold">
-                    Idr. {Math.round(totals.tax).toLocaleString()}
-                  </span>
-                </div>
-                <div className="border-t pt-2 sm:pt-3 flex justify-between">
-                  <span className="font-semibold text-sm sm:text-base">
-                    Sub Total
-                  </span>
-                  <span className="text-base sm:text-lg font-semibold">
-                    Idr. {Math.round(totals.subTotal).toLocaleString()}
-                  </span>
-                </div>
-              </div>
-
-              <button
-                onClick={handleCheckout}
-                disabled={!cart || cart.length === 0}
-                className="w-full bg-[#6B727C] text-white py-2.5 sm:py-3 rounded-lg hover:bg-[#A5A58D] transition mb-4 sm:mb-6 text-sm sm:text-base font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Checkout
-              </button>
-
-              <div>
-                <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">
-                  We Accept
-                </p>
-                <div className="grid grid-cols-3 gap-2 mb-2 sm:mb-3">
-                  <div className="p-1.5 sm:p-2 flex items-center justify-center">
-                    <img src="/BRI.svg" alt="BRI" className="h-4 sm:h-5" />
+          {reviews.length > 0 && (
+            <div className="border-t border-gray-200 p-6 lg:p-10">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">
+                Customer Reviews ({totalReviews})
+              </h3>
+              <div className="space-y-6">
+                {reviews.map((review, index) => (
+                  <div
+                    key={`review-${index}-${review.user}`}
+                    className="border-b border-gray-100 pb-6 last:border-0"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h4 className="font-medium text-gray-900">
+                          {review.user}
+                        </h4>
+                        <div className="flex items-center gap-1 mt-1">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={`review-star-${i}`}
+                              className={`w-4 h-4 ${
+                                i < review.rating
+                                  ? "fill-orange-400 text-[#8E6447]400"
+                                  : "fill-gray-200 text-gray-200"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <span className="text-sm text-gray-500">
+                        {formatDate(review.createdAt)}
+                      </span>
+                    </div>
+                    <p className="text-gray-600 mt-2">{review.text}</p>
                   </div>
-                  <div className="p-1.5 sm:p-2 flex items-center justify-center">
-                    <img src="/dana.svg" alt="DANA" className="h-4 sm:h-5" />
-                  </div>
-                  <div className="p-1.5 sm:p-2 flex items-center justify-center">
-                    <img src="/bca.svg" alt="BCA" className="h-4 sm:h-5" />
-                  </div>
-                  <div className="p-1.5 sm:p-2 flex items-center justify-center">
-                    <img src="/gopay.svg" alt="gopay" className="h-4 sm:h-5" />
-                  </div>
-                  <div className="p-1.5 sm:p-2 flex items-center justify-center">
-                    <img src="/ovo.svg" alt="OVO" className="h-4 sm:h-5" />
-                  </div>
-                  <div className="p-1.5 sm:p-2 flex items-center justify-center">
-                    <img
-                      src="/paypal.svg"
-                      alt="PayPal"
-                      className="h-4 sm:h-5"
-                    />
-                  </div>
-                </div>
-                <p className="text-xs text-gray-500">
-                  *Get Discount if you pay with Bank Central Asia
-                </p>
+                ))}
               </div>
             </div>
-          </div>
+          )}
         </div>
+
+        {recommendations.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-8">
+              You Might Also Like
+            </h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {currentRecommendations.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => handleRecommendationClick(item.id)}
+                  className="cursor-pointer transform hover:scale-105 transition-transform"
+                >
+                  <MenuCard
+                    title={item.name}
+                    price={formatPrice(item.price)}
+                    description={item.description}
+                    image={item.imageUrl || item.image_url}
+                    isFlashSale={item.isFlashSale || item.is_flash_sale}
+                    isFavorite={item.is_favorite}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                itemsPerPage={itemsPerPage}
+                totalItems={recommendations.length}
+              />
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default ProductPaymentDetails;
+export default ProductDetailPage;

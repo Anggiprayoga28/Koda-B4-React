@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Trash2, Upload } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
   const [formData, setFormData] = useState({
@@ -51,12 +52,12 @@ const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
     const file = e.target.files[0];
     if (file) {
       if (!file.type.startsWith('image/')) {
-        alert('Please select an image file');
+        toast('Please select an image file');
         return;
       }
 
       if (file.size > 5 * 1024 * 1024) {
-        alert('Image size must be less than 5MB');
+        toast('Image size must be less than 5MB');
         return;
       }
 
@@ -77,22 +78,22 @@ const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
 
   const handleSubmit = async () => {
     if (!formData.name.trim()) {
-      alert('Please enter product name');
+      toast('Please enter product name');
       return;
     }
 
     if (!formData.price || formData.price < 1000) {
-      alert('Price must be at least IDR 1,000');
+      toast('Price must be at least IDR 1,000');
       return;
     }
 
     if (!formData.stock || formData.stock < 0) {
-      alert('Please enter valid stock');
+      toast('Please enter valid stock');
       return;
     }
 
     if (!formData.category_id) {
-      alert('Please select a category');
+      toast('Please select a category');
       return;
     }
 
@@ -129,7 +130,7 @@ const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
       setPreviewImage('');
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('Failed to save product. Please try again.');
+      toast('Failed to save product. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -183,7 +184,7 @@ const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
             )}
 
             <label className="cursor-pointer inline-block">
-              <span className="inline-flex items-center gap-2 bg-orange-500 text-white px-6 py-2.5 rounded-lg hover:bg-orange-600 transition-colors font-medium">
+              <span className="inline-flex items-center gap-2 bg-#8E6447 text-white px-6 py-2.5 rounded-lg hover:bg-#7A5538 transition-colors font-medium">
                 <Upload className="w-4 h-4" />
                 {previewImage ? 'Change Image' : 'Upload Image'}
               </span>
@@ -207,7 +208,7 @@ const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
               placeholder="Enter Product Name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-#8E6447 text-gray-900"
               disabled={loading}
             />
           </div>
@@ -219,7 +220,7 @@ const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
             <select
               value={formData.category_id}
               onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-gray-900"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-#8E6447 bg-white text-gray-900"
               disabled={loading}
             >
               <option value="">Select Category</option>
@@ -238,7 +239,7 @@ const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
               placeholder="Enter Product Price"
               value={formData.price}
               onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-#8E6447 text-gray-900"
               min="1000"
               disabled={loading}
             />
@@ -253,7 +254,7 @@ const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
               placeholder="Enter Product Stock"
               value={formData.stock}
               onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-#8E6447 text-gray-900"
               min="0"
               disabled={loading}
             />
@@ -268,7 +269,7 @@ const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows="4"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 resize-none"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-#8E6447 text-gray-900 resize-none"
               disabled={loading}
             />
           </div>
@@ -283,7 +284,7 @@ const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
                   type="checkbox"
                   checked={formData.is_flash_sale}
                   onChange={(e) => setFormData({ ...formData, is_flash_sale: e.target.checked })}
-                  className="w-5 h-5 text-orange-500 rounded focus:ring-orange-500"
+                  className="w-5 h-5 text-#8E6447 rounded focus:ring-#8E6447"
                   disabled={loading}
                 />
                 <span className="text-gray-700">Flash Sale</span>
@@ -293,7 +294,7 @@ const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
                   type="checkbox"
                   checked={formData.is_favorite}
                   onChange={(e) => setFormData({ ...formData, is_favorite: e.target.checked })}
-                  className="w-5 h-5 text-orange-500 rounded focus:ring-orange-500"
+                  className="w-5 h-5 text-#8E6447 rounded focus:ring-#8E6447"
                   disabled={loading}
                 />
                 <span className="text-gray-700">Favorite Product</span>
@@ -303,7 +304,7 @@ const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
                   type="checkbox"
                   checked={formData.is_buy1get1}
                   onChange={(e) => setFormData({ ...formData, is_buy1get1: e.target.checked })}
-                  className="w-5 h-5 text-orange-500 rounded focus:ring-orange-500"
+                  className="w-5 h-5 text-#8E6447 rounded focus:ring-#8E6447"
                   disabled={loading}
                 />
                 <span className="text-gray-700">Buy 1 Get 1</span>
@@ -317,7 +318,7 @@ const ProductFormModal = ({ isOpen, onClose, product, onSave }) => {
             type="button"
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full bg-orange-500 text-white py-3.5 rounded-lg font-semibold hover:bg-orange-600 transition-colors text-base disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-#8E6447 text-white py-3.5 rounded-lg font-semibold hover:bg-#7A5538 transition-colors text-base disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Saving...' : (product ? 'Update Product' : 'Save Product')}
           </button>

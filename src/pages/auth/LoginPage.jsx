@@ -10,29 +10,18 @@ import Button from '../../components/ui/Button';
 import LinkText from '../../components/layout/LinkText';
 import SocialButtons from '../../components/ui/SocialButtons';
 import Notification from '../../components/ui/Notification';
-import { login } from '../../redux/authActions';
+import { clearAuthError, login } from '../../redux/slices/authSlice';
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
   
-  const { isAuthenticated, user } = useSelector(state => state.auth);
+  const { isAuthenticated, user, isLoading, error } = useSelector(state => state.auth);
   
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
   const [notification, setNotification] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      if (user.role === 'admin') {
-        navigate('/dashboard');
-      } else {
-        navigate('/');
-      }
-    }
-  }, [isAuthenticated, user, navigate]);
 
   useEffect(() => {
     document.title = 'Login - Coffee Shop';
@@ -55,6 +44,18 @@ const LoginPage = () => {
     }
   }, [notification]);
 
+  useEffect(() => {
+    if (error) {
+      setNotification({ message: error, type: 'error' });
+    }
+  }, [error]);
+
+  useEffect(() => {
+    return () => {
+      dispatch(clearAuthError());
+    };
+  }, [dispatch]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -73,32 +74,28 @@ const LoginPage = () => {
     const newErrors = validateForm();
     
     if (Object.keys(newErrors).length === 0) {
-      setLoading(true);
-      
       try {
-        const formDataToSend = new FormData();
-        formDataToSend.append('email', formData.email);
-        formDataToSend.append('password', formData.password);
-
-        const result = await dispatch(login(formDataToSend));
+        const resultAction = await dispatch(login({
+          email: formData.email,
+          password: formData.password
+        }));
         
-        if (result.payload?.success) {
+        if (login.fulfilled.match(resultAction)) {
+          const result = resultAction.payload;
+          
           setNotification({ message: 'Login successful!', type: 'success' });
           
-        } else {
-          setNotification({ 
-            message: result.payload?.message || 'Invalid email or password', 
-            type: 'error' 
-          });
+          setTimeout(() => {
+            if (result.user?.role === 'admin') {
+              navigate('/dashboard', { replace: true });
+            } else {
+              navigate('/', { replace: true });
+            }
+          }, 500);
         }
-      } catch (error) {
-        console.error('Login error:', error);
-        setNotification({ 
-          message: 'Network error. Please check your connection.', 
-          type: 'error' 
-        });
-      } finally {
-        setLoading(false);
+        
+      } catch (err) {
+        console.error('Login error:', err);
       }
     } else {
       setErrors(newErrors);
@@ -138,7 +135,7 @@ const LoginPage = () => {
             <div className="text-right -mt-1">
               <button
                 onClick={() => navigate('/forgot-password')}
-                className="text-orange-500 hover:text-orange-600 text-sm"
+                className="text-#8E6447 hover:text-#7A5538 text-sm"
               >
                 Lupa Password?
               </button>
@@ -147,9 +144,9 @@ const LoginPage = () => {
               <Button 
                 onClick={handleSubmit} 
                 variant="primary"
-                disabled={loading}
+                disabled={isLoading}
               >
-                {loading ? 'Loading...' : 'Login'}
+                {isLoading ? 'Loading...' : 'Login'}
               </Button>
             </div>
           </div>
@@ -201,7 +198,7 @@ const LoginPage = () => {
             <div className="text-right">
               <button
                 onClick={() => navigate('/forgot-password')}
-                className="text-orange-500 hover:text-orange-600 text-sm font-medium"
+                className="text-#8E6447 hover:text-#7A5538 text-sm font-medium"
               >
                 Lupa Password?
               </button>
@@ -212,16 +209,16 @@ const LoginPage = () => {
             <Button 
               onClick={handleSubmit} 
               variant="primary"
-              disabled={loading}
+              disabled={isLoading}
             >
-              {loading ? 'Loading...' : 'Login'}
+              {isLoading ? 'Loading...' : 'Login'}
             </Button>
             
             <div className="text-center text-sm">
               <span className="text-gray-600">Not Have An Account? </span>
               <button
                 onClick={() => navigate('/register')}
-                className="text-orange-500 hover:text-orange-600 font-medium"
+                className="text-#8E6447 hover:text-#7A5538 font-medium"
               >
                 Register
               </button>

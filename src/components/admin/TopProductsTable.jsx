@@ -23,7 +23,7 @@ const TopProductsTable = ({ products }) => {
                   <td className="py-3 px-4 text-sm text-gray-700">{index + 1}</td>
                   <td className="py-3 px-4 text-sm font-medium text-gray-800">{product.name}</td>
                   <td className="py-3 px-4 text-sm text-gray-700">{product.sold} pcs</td>
-                  <td className="py-3 px-4 text-sm font-semibold text-orange-600">
+                  <td className="py-3 px-4 text-sm font-semibold text-#7A5538">
                     IDR {product.revenue.toLocaleString()}
                   </td>
                 </tr>

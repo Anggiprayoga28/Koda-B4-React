@@ -1,24 +1,51 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { Minus, Plus, ShoppingCart, Star, AlertCircle } from "lucide-react";
-import { useCart } from "../contexts/CartContext";
-import axios from "axios";
+import { toast } from "react-toastify";
+
 import MenuCard from "../components/landing/MenuCard";
 import Pagination from "../components/admin/Pagination";
-import { addToCart as addToCartAPI } from "../services/apiService";
+import { ProductImage } from "../components/landing/ProductImage";
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL;
+import { getProductDetail, clearProductDetail } from "../redux/slices/productSlice";
+import { addToCart } from "../redux/slices/cartSlice";
+
+const formatPrice = (price) => {
+  return `IDR ${price?.toLocaleString("id-ID") || 0}`;
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("id-ID", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
 
 const ProductDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const dispatch = useDispatch();
 
-  const [product, setProduct] = useState(null);
-  const [images, setImages] = useState([]);
-  const [allRecommendations, setAllRecommendations] = useState([]);
-  const [sizes, setSizes] = useState([]);
-  const [temperatures, setTemperatures] = useState([]);
+  const { token } = useSelector((state) => state.auth);
+  const {
+    currentProduct: product,
+    images,
+    sizes,
+    temperatures,
+    reviews,
+    recommendations,
+    averageRating,
+    totalReviews,
+    detailLoading: loading,
+    detailError: error,
+  } = useSelector((state) => state.product);
+
+  const { loading: cartLoading } = useSelector((state) => state.cart);
+
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedTemp, setSelectedTemp] = useState(null);
@@ -26,123 +53,31 @@ const ProductDetailPage = () => {
   const [selectedTempId, setSelectedTempId] = useState(null);
   const [currentImage, setCurrentImage] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [adding, setAdding] = useState(false);
-
   const itemsPerPage = 3;
 
   useEffect(() => {
-    let isMounted = true;
-
-    const fetchProductData = async () => {
-      if (!isMounted) return;
-
-      setLoading(true);
-      setError(null);
-
-      try {
-        const productResponse = await axios.get(
-          `${API_BASE_URL}/products/${id}/detail`
-        );
-
-        if (!productResponse.data.success || !productResponse.data.data) {
-          throw new Error("Product not found");
-        }
-
-        const responseData = productResponse.data.data;
-
-        if (isMounted) {
-          setProduct(responseData.product);
-
-          if (
-            Array.isArray(responseData.images) &&
-            responseData.images.length > 0
-          ) {
-            setImages(responseData.images);
-          } else {
-            setImages([]);
-          }
-
-          if (responseData.sizes && responseData.sizes.length > 0) {
-            setSizes(responseData.sizes);
-            const defaultSize = responseData.sizes[0];
-            setSelectedSize(defaultSize.name);
-            setSelectedSizeId(defaultSize.id);
-          }
-
-          if (
-            responseData.temperatures &&
-            responseData.temperatures.length > 0
-          ) {
-            setTemperatures(responseData.temperatures);
-            const defaultTemp = responseData.temperatures[0];
-            setSelectedTemp(defaultTemp.name);
-            setSelectedTempId(defaultTemp.id);
-          }
-
-          if (
-            responseData.recommendations &&
-            responseData.recommendations.length > 0
-          ) {
-            setAllRecommendations(responseData.recommendations);
-          }
-        }
-
-        if (
-          isMounted &&
-          responseData &&
-          (!responseData.recommendations ||
-            responseData.recommendations.length === 0)
-        ) {
-          const allProductsResponse = await axios.get(
-            `${API_BASE_URL}/products`,
-            {
-              params: { limit: 1000 },
-            }
-          );
-
-          if (
-            allProductsResponse.data.success &&
-            allProductsResponse.data.data &&
-            isMounted
-          ) {
-            let recommendations = allProductsResponse.data.data.filter(
-              (p) => p.id !== parseInt(id)
-            );
-
-            const productData = responseData.product;
-            if (productData.category_id) {
-              const sameCategory = recommendations.filter(
-                (p) => p.category_id === productData.category_id
-              );
-              const otherCategory = recommendations.filter(
-                (p) => p.category_id !== productData.category_id
-              );
-              recommendations = [...sameCategory, ...otherCategory];
-            }
-
-            setAllRecommendations(recommendations);
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching product:", err);
-        if (isMounted) {
-          setError(err.message || "Failed to load product");
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchProductData();
+    if (id) {
+      dispatch(getProductDetail(id));
+    }
 
     return () => {
-      isMounted = false;
+      dispatch(clearProductDetail());
     };
-  }, [id]);
+  }, [id, dispatch]);
+
+  useEffect(() => {
+    if (sizes?.length > 0 && !selectedSizeId) {
+      const defaultSize = sizes[0];
+      setSelectedSize(defaultSize.name);
+      setSelectedSizeId(defaultSize.id);
+    }
+
+    if (temperatures?.length > 0 && !selectedTempId) {
+      const defaultTemp = temperatures[0];
+      setSelectedTemp(defaultTemp.name);
+      setSelectedTempId(defaultTemp.id);
+    }
+  }, [sizes, temperatures, selectedSizeId, selectedTempId]);
 
   useEffect(() => {
     if (product) {
@@ -157,211 +92,144 @@ const ProductDetailPage = () => {
     setCurrentPage(1);
     setQuantity(1);
     setCurrentImage(0);
+    setSelectedSizeId(null);
+    setSelectedTempId(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [id]);
 
   const productImages = useMemo(() => {
-    if (Array.isArray(images) && images.length > 0) {
-      const sorted = [...images].sort((a, b) => {
-        const ao =
-          typeof a.display_order === "number" ? a.display_order : a.order || 0;
-        const bo =
-          typeof b.display_order === "number" ? b.display_order : b.order || 0;
-        return ao - bo;
-      });
-
-      const urls = sorted
-        .map((img) => img.image_url || img.url)
-        .filter(Boolean);
-
-      if (urls.length > 0) {
-        return urls;
-      }
+    if (images?.length > 0) {
+      return images.map((img) => img.url).filter(Boolean);
     }
 
-    if (!product) return ["/placeholder.png"];
-
-    if (product.image_url || product.image) {
-      return [product.image_url || product.image];
+    if (product?.image_url) {
+      return [product.image_url];
     }
 
-    return ["/placeholder.png"];
+    return ["https://www.svgrepo.com/show/508699/landscape-placeholder.svg"];
   }, [images, product]);
 
-  const totalPages = Math.ceil(allRecommendations.length / itemsPerPage);
+  const totalPages = Math.ceil(recommendations.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentRecommendations = allRecommendations.slice(
+  const currentRecommendations = recommendations.slice(
     indexOfFirstItem,
     indexOfLastItem
   );
 
-  const handleQuantityChange = (delta) => {
-    setQuantity((prev) => Math.max(1, prev + delta));
-  };
+  const handleQuantityChange = useCallback(
+    (delta) => {
+      if (!product) return;
 
-  const handleSizeChange = (size) => {
+      const newQuantity = quantity + delta;
+      if (newQuantity < 1) return;
+      if (product.stock && newQuantity > product.stock) {
+        toast.warning(`Only ${product.stock} items available`);
+        return;
+      }
+      setQuantity(newQuantity);
+    },
+    [product, quantity]
+  );
+
+  const handleSizeChange = useCallback((size) => {
     setSelectedSize(size.name);
     setSelectedSizeId(size.id);
-  };
+  }, []);
 
-  const handleTempChange = (temp) => {
+  const handleTempChange = useCallback((temp) => {
     setSelectedTemp(temp.name);
     setSelectedTempId(temp.id);
-  };
+  }, []);
 
-  const handleBuyNow = async () => {
-    if (!product || adding) return;
+  const calculateFinalPrice = useCallback(() => {
+    if (!product) return 0;
 
-    if (!selectedSizeId) {
-      alert("Please select a size");
-      return;
+    let price = product.price || 0;
+
+    const selectedSizeObj = sizes.find((s) => s.id === selectedSizeId);
+    if (selectedSizeObj?.priceAdjustment) {
+      price += selectedSizeObj.priceAdjustment;
     }
 
-    if (!selectedTempId) {
-      alert("Please select a temperature (Hot/Ice)");
-      return;
-    }
+    return price;
+  }, [product, sizes, selectedSizeId]);
 
-    try {
-      setAdding(true);
-
-      const cartData = {
-        productId: product.id,
-        quantity,
-        sizeId: selectedSizeId,
-        temperatureId: selectedTempId,
-      };
-
-      const response = await addToCartAPI(cartData);
-
-      if (response.success) {
-        navigate("/payment-detail", {
-          state: {
-            from: "product-detail",
-            directBuy: true,
-          },
-        });
-      } else {
-        throw new Error(response.message || "Failed to add to cart");
-      }
-    } catch (err) {
-      console.error("Error adding to cart:", err);
-      const errorMessage =
-        err.response?.data?.message ||
-        err.message ||
-        "Failed to add product to cart";
-
-      alert(errorMessage);
-
-      if (err.response?.status === 401) {
-        navigate("/login", {
-          state: {
-            from: `/products/${id}`,
-            message: "Session expired. Please login again",
-          },
-        });
-      }
-    } finally {
-      setAdding(false);
-    }
-  };
-
-  const handleAddToCart = async () => {
-    if (!product || adding) return;
-
-    if (!selectedSizeId) {
-      alert("Please select a size");
-      return;
-    }
-
-    if (!selectedTempId) {
-      alert("Please select a temperature (Hot/Ice)");
-      return;
-    }
-
-    try {
-      setAdding(true);
-
-      const cartData = {
-        productId: product.id,
-        quantity,
-        sizeId: selectedSizeId,
-        temperatureId: selectedTempId,
-      };
-
-      const response = await addToCartAPI(cartData);
-
-      if (response.success) {
-        addToCart({
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          quantity,
-          size: selectedSize,
-          temp: selectedTemp,
-          image: product.image_url || product.image || productImages[0],
-        });
-
-        navigate("/cart");
-      } else {
-        throw new Error(response.message || "Failed to add to cart");
-      }
-    } catch (err) {
-      console.error("Error adding to cart:", err);
-      const errorMessage =
-        err.response?.data?.message ||
-        err.message ||
-        "Failed to add product to cart";
-      alert(errorMessage);
-
-      if (err.response?.status === 401) {
-        navigate("/login", {
-          state: {
-            from: `/product/${id}`,
-            message: "Session expired. Please login again",
-          },
-        });
-      }
-    } finally {
-      setAdding(false);
-    }
-  };
+  const finalPrice = calculateFinalPrice();
 
   const handleRecommendationClick = (productId) => {
     navigate(`/product/${productId}`);
   };
 
-  const formatPrice = (price) => {
-    return typeof price === "number" ? price.toLocaleString("id-ID") : price;
+  const handleAddToCart = async () => {
+    if (cartLoading) return;
+
+    if (!token) {
+      toast.error("Please login to add items to cart");
+      navigate("/login");
+      return;
+    }
+
+    if (!product) {
+      toast.error("Product information not available");
+      return;
+    }
+
+    const cartItem = {
+      productId: product.id,
+      quantity,
+      sizeId: selectedSizeId,
+      temperatureId: selectedTempId,
+    };
+
+    try {
+      const result = await dispatch(addToCart(cartItem)).unwrap();
+      toast.success(result.message || "Product added to cart!");
+    } catch (error) {
+      toast.error(error || "Failed to add to cart. Please try again.");
+    }
   };
 
-  if (loading) {
+  const handleBuyNow = async () => {
+    if (!token) {
+      toast.error("Please login to continue");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      await handleAddToCart();
+      setTimeout(() => {
+        navigate("/cart");
+      }, 500);
+    } catch (error) {
+      console.error("Buy now error:", error);
+    }
+  };
+
+  if (loading && !product) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 pt-20">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-          <p className="text-gray-500">Loading product...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-#8E6447 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading product details...</p>
         </div>
       </div>
     );
   }
 
-  if (error || !product) {
+  if (error && !product) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto px-4">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Product Not Found
-          </h2>
-          <p className="text-gray-600 mb-6">
-            {error ||
-              "The product you are looking for does not exist or has been removed."}
-          </p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 pt-20">
+        <div className="text-center max-w-md px-4">
+          <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-12 h-12 text-red-500" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Product Not Found</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
           <button
-            onClick={() => navigate("/product")}
-            className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg transition-colors"
+            onClick={() => navigate("/products")}
+            className="px-6 py-3 bg-#8E6447 text-white rounded-lg hover:bg-#7A5538 transition"
           >
             Back to Products
           </button>
@@ -370,107 +238,86 @@ const ProductDetailPage = () => {
     );
   }
 
-  const discountPercentage =
-    product.originalPrice && product.originalPrice > product.price
-      ? Math.round(
-          ((product.originalPrice - product.price) / product.originalPrice) *
-            100
-        )
-      : 0;
+  if (!product) {
+    return null;
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-12">
-          <div className="grid md:grid-cols-2 gap-8 p-6 lg:p-10">
-            <div>
-              <div className="mb-4 overflow-hidden bg-gray-100 rounded-lg">
-                <img
-                  src={productImages[currentImage] || "/placeholder.png"}
+    <div className="min-h-screen bg-gray-50 pt-20 pb-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 lg:p-10">
+            <div className="space-y-4">
+              <div className="aspect-square rounded-xl overflow-hidden bg-gray-100">
+                <ProductImage
+                  src={productImages[currentImage]}
                   alt={product.name}
-                  className="w-full h-96 object-cover"
-                  onError={(e) => {
-                    e.target.src = "/placeholder.png";
-                  }}
+                  className="w-full h-full object-cover"
                 />
               </div>
 
-              <div className="grid grid-cols-4 gap-2">
-                {productImages.map((img, index) => (
-                  <button
-                    key={`img-${index}`}
-                    onClick={() => setCurrentImage(index)}
-                    className={`overflow-hidden rounded-lg transition-all ${
-                      currentImage === index
-                        ? "ring-2 ring-[#FF8906]"
-                        : "ring-2 ring-transparent hover:ring-gray-300"
-                    }`}
-                  >
-                    <img
-                      src={img}
-                      alt={`${product.name} ${index + 1}`}
-                      className="w-full h-20 object-cover"
-                      onError={(e) => {
-                        e.target.src = "/placeholder.png";
-                      }}
-                    />
-                  </button>
-                ))}
-              </div>
+              {productImages.length > 1 && (
+                <div className="grid grid-cols-4 gap-3">
+                  {productImages.map((img, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentImage(index)}
+                      className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                        currentImage === index
+                          ? "border-[#8E6447] ring-2 ring-[#C5A053]"
+                          : "border-gray-200 hover:border-orange-300"
+                      }`}
+                    >
+                      <ProductImage
+                        src={img}
+                        alt={`${product.name} ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <div>
-              {(product.isFlashSale || product.is_flash_sale) && (
-                <span className="inline-block bg-red-600 text-white px-3 py-1 text-xs font-semibold rounded-full mb-2">
-                  FLASH SALE{" "}
-                  {discountPercentage > 0 && `${discountPercentage}%`}
-                </span>
+            <div className="flex flex-col">
+              {product.is_flash_sale && (
+                <div className="inline-flex items-center gap-2 bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-medium mb-3 w-fit">
+                  ⚡ Flash Sale
+                </div>
               )}
 
               <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
                 {product.name}
               </h1>
 
-              {product.category && (
-                <span className="inline-block bg-orange-100 text-orange-700 px-3 py-1 text-sm rounded-full mb-3">
-                  {product.category}
-                </span>
-              )}
-
-              <div className="flex items-baseline gap-3 mb-3">
-                {product.originalPrice &&
-                  product.originalPrice > product.price && (
-                    <span className="text-sm text-gray-400 line-through">
-                      IDR{" "}
-                      {formatPrice(
-                        product.originalPrice || product.original_price
-                      )}
-                    </span>
-                  )}
-                <span className="text-3xl font-bold text-orange-500">
-                  IDR {formatPrice(product.price)}
-                </span>
+              <div className="text-3xl font-bold text-#8E6447 mb-4">
+                {formatPrice(finalPrice)}
+                {product.is_flash_sale && product.originalPrice && (
+                  <span className="text-lg text-gray-400 line-through ml-3">
+                    {formatPrice(product.originalPrice)}
+                  </span>
+                )}
               </div>
 
               <div className="flex items-center gap-2 mb-4">
-                <div className="flex items-center gap-1">
+                <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
                     <Star
-                      key={`star-${i}`}
-                      className={`w-4 h-4 ${
-                        i < Math.floor(product.rating || 5)
-                          ? "fill-orange-400 text-orange-400"
+                      key={i}
+                      className={`w-5 h-5 ${
+                        i < Math.floor(averageRating)
+                          ? "fill-#C5A053 text-#C5A053"
                           : "fill-gray-200 text-gray-200"
                       }`}
                     />
                   ))}
-                  <span className="ml-1 text-sm font-medium">
-                    {product.rating || "5.0"}
-                  </span>
                 </div>
-                <span className="text-gray-400">|</span>
-                <span className="text-sm text-gray-600">
-                  {product.reviewCount || product.review_count || "200+"} Review
+                <span className="text-gray-600">
+                  {averageRating.toFixed(1)}
+                </span>
+                <span className="text-gray-400">•</span>
+                <span className="text-gray-600">
+                  {totalReviews || 0} Review{totalReviews !== 1 ? "s" : ""}
                 </span>
               </div>
 
@@ -481,7 +328,7 @@ const ProductDetailPage = () => {
                       product.stock > 10
                         ? "text-green-600"
                         : product.stock > 0
-                          ? "text-orange-600"
+                          ? "text-#7A5538"
                           : "text-red-600"
                     }`}
                   >
@@ -492,12 +339,19 @@ const ProductDetailPage = () => {
                 </div>
               )}
 
-              <p className="text-sm text-gray-600 mb-6 leading-relaxed">
-                {product.description ||
-                  "Delicious coffee made with premium ingredients."}
-              </p>
+              <div className="mb-6">
+                <p className="text-gray-600 leading-relaxed">
+                  {product.description}
+                </p>
+                <p className="text-sm text-gray-500 mt-2">
+                  <em>
+                    Note: Items may arrive less cold due to delivery time.
+                    Product look may vary due to delivery.
+                  </em>
+                </p>
+              </div>
 
-              <div className="mb-4">
+              <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Quantity
                 </label>
@@ -505,17 +359,17 @@ const ProductDetailPage = () => {
                   <button
                     onClick={() => handleQuantityChange(-1)}
                     disabled={quantity <= 1}
-                    className="w-9 h-9 border-2 border-[#FF8906] text-[#0B0909] flex items-center justify-center hover:bg-orange-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded"
+                    className="w-10 h-10 border-2 border-[#8E6447] text-[#0B0909] flex items-center justify-center hover:bg-#F9F6F0 transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-lg"
                   >
                     <Minus className="w-4 h-4" />
                   </button>
-                  <span className="text-lg w-10 text-center font-medium">
+                  <span className="text-lg w-12 text-center font-medium">
                     {quantity}
                   </span>
                   <button
                     onClick={() => handleQuantityChange(1)}
                     disabled={product.stock && quantity >= product.stock}
-                    className="w-9 h-9 bg-[#FF8906] text-[#0B0909] flex items-center justify-center hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded"
+                    className="w-10 h-10 bg-[#8E6447] text-[#0B0909] flex items-center justify-center hover:bg-#7A5538 transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-lg"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
@@ -523,26 +377,26 @@ const ProductDetailPage = () => {
               </div>
 
               {sizes.length > 0 && (
-                <div className="mb-4">
+                <div className="mb-6">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Choose Size
                   </label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-3">
                     {sizes.map((size) => (
                       <button
                         key={size.id}
                         onClick={() => handleSizeChange(size)}
-                        className={`py-2 px-4 text-sm font-medium rounded transition-colors ${
-                          selectedSize === size.name
-                            ? "bg-white ring-2 ring-[#FF8906] text[#0B0909]"
+                        className={`py-3 px-4 text-sm font-medium rounded-lg transition-colors ${
+                          selectedSizeId === size.id
+                            ? "bg-#F9F6F0 ring-2 ring-[#8E6447] text-[#0B0909]"
                             : "bg-white ring-2 ring-gray-300 text-gray-700 hover:ring-orange-300"
                         }`}
                       >
-                        {size.name}
+                        <div className="font-medium">{size.name}</div>
                         {size.priceAdjustment > 0 && (
-                          <span className="text-xs text-gray-500 block">
+                          <div className="text-xs text-gray-500 mt-1">
                             +{formatPrice(size.priceAdjustment)}
-                          </span>
+                          </div>
                         )}
                       </button>
                     ))}
@@ -551,19 +405,19 @@ const ProductDetailPage = () => {
               )}
 
               {temperatures.length > 0 && (
-                <div className="mb-6">
+                <div className="mb-8">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Hot/Ice?
+                    Temperature
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {temperatures.map((temp) => (
                       <button
                         key={temp.id}
                         onClick={() => handleTempChange(temp)}
-                        className={`py-2 px-4 text-sm font-medium rounded transition-colors ${
-                          selectedTemp === temp.name
-                            ? "ring-2 ring-[#FF8906] text-[#0B0909]"
-                            : "ring-2 ring-gray-300 text-gray-700 hover:ring-orange-300"
+                        className={`py-3 px-4 text-sm font-medium rounded-lg transition-colors ${
+                          selectedTempId === temp.id
+                            ? "bg-#F9F6F0 ring-2 ring-[#8E6447] text-[#0B0909]"
+                            : "bg-white ring-2 ring-gray-300 text-gray-700 hover:ring-orange-300"
                         }`}
                       >
                         {temp.name}
@@ -573,70 +427,103 @@ const ProductDetailPage = () => {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
                   onClick={handleBuyNow}
-                  disabled={product.stock === 0 || adding}
-                  className="flex-1 bg-[#FF8906] hover:bg-orange-600 text:black py-3 font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={product.stock === 0 || cartLoading}
+                  className="bg-[#8E6447] hover:bg-#7A5538 text-white py-3 font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {adding ? "Adding..." : "Buy Now"}
+                  {cartLoading ? "Processing..." : "Buy Now"}
                 </button>
                 <button
                   onClick={handleAddToCart}
-                  disabled={product.stock === 0 || adding}
-                  className="ring-2 ring-orange-500 text-orange-500 hover:bg-orange-50 py-3 font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={product.stock === 0 || cartLoading}
+                  className="ring-2 ring-#8E6447 text-#8E6447 hover:bg-#F9F6F0 py-3 font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ShoppingCart className="w-5 h-5" />
-                  <span>{adding ? "Adding..." : "Add to Cart"}</span>
+                  <span>{cartLoading ? "Adding..." : "Add to Cart"}</span>
                 </button>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">
-            Recommendation <span className="text-gray-500">For You</span>
-          </h2>
-
-          {currentRecommendations.length > 0 ? (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                {currentRecommendations.map((item) => (
+          {reviews.length > 0 && (
+            <div className="border-t border-gray-200 p-6 lg:p-10">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">
+                Customer Reviews ({totalReviews})
+              </h3>
+              <div className="space-y-6">
+                {reviews.map((review, index) => (
                   <div
-                    key={item.id}
-                    onClick={() => handleRecommendationClick(item.id)}
-                    className="cursor-pointer transform hover:scale-105 transition-transform"
+                    key={`review-${index}-${review.user}`}
+                    className="border-b border-gray-100 pb-6 last:border-0"
                   >
-                    <MenuCard
-                      title={item.name}
-                      price={formatPrice(item.price)}
-                      description={item.description}
-                      image={item.image_url || item.image || item.imageUrl}
-                      isFlashSale={item.isFlashSale || item.is_flash_sale}
-                    />
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h4 className="font-medium text-gray-900">
+                          {review.user}
+                        </h4>
+                        <div className="flex items-center gap-1 mt-1">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={`review-star-${i}`}
+                              className={`w-4 h-4 ${
+                                i < review.rating
+                                  ? "fill-#C5A053 text-#C5A053"
+                                  : "fill-gray-200 text-gray-200"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <span className="text-sm text-gray-500">
+                        {formatDate(review.createdAt)}
+                      </span>
+                    </div>
+                    <p className="text-gray-600 mt-2">{review.text}</p>
                   </div>
                 ))}
               </div>
-
-              {totalPages > 1 && (
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                  itemsPerPage={itemsPerPage}
-                  totalItems={allRecommendations.length}
-                />
-              )}
-            </>
-          ) : (
-            <div className="text-center py-12 bg:white rounded-lg">
-              <p className="text-gray-500">
-                No recommendations available at the moment
-              </p>
             </div>
           )}
         </div>
+
+        {recommendations.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-8">
+              You Might Also Like
+            </h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {currentRecommendations.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => handleRecommendationClick(item.id)}
+                  className="cursor-pointer transform hover:scale-105 transition-transform"
+                >
+                  <MenuCard
+                    title={item.name}
+                    price={formatPrice(item.price)}
+                    description={item.description}
+                    image={item.imageUrl || item.image_url}
+                    isFlashSale={item.isFlashSale || item.is_flash_sale}
+                    isFavorite={item.is_favorite}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                itemsPerPage={itemsPerPage}
+                totalItems={recommendations.length}
+              />
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

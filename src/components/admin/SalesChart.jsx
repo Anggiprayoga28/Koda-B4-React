@@ -37,7 +37,7 @@ const SalesChart = ({ dateRange, onDateChange }) => {
         {chartData.map((item, index) => (
           <div key={index} className="flex-1 flex flex-col items-center gap-2">
             <div 
-              className="w-full bg-orange-500 rounded-t-lg transition-all hover:bg-orange-600"
+              className="w-full bg-#8E6447 rounded-t-lg transition-all hover:bg-#7A5538"
               style={{ 
                 height: `${(item.value / maxValue) * 100}%`,
                 minHeight: '20px'
@@ -50,7 +50,7 @@ const SalesChart = ({ dateRange, onDateChange }) => {
 
       <div className="mt-6 pt-6 border-t flex items-center justify-center gap-6">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-orange-500 rounded"></div>
+          <div className="w-4 h-4 bg-#8E6447 rounded"></div>
           <span className="text-sm text-gray-600">Sales</span>
         </div>
       </div>

@@ -9,7 +9,7 @@ import React from 'react';
 const LinkText = ({ text, linkText, onClick }) => (
   <p className="text-center text-gray-600 mt-6 text-sm">
     {text}{' '}
-    <button onClick={onClick} className="text-orange-500 hover:text-orange-600 font-semibold">
+    <button onClick={onClick} className="text-#8E6447 hover:text-#7A5538 font-semibold">
       {linkText}
     </button>
   </p>

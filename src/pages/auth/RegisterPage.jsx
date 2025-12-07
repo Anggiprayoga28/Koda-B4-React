@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, Lock } from 'lucide-react';
+import { User, Mail, Lock, Phone } from 'lucide-react';
 import AuthLayout from '../../components/layout/AuthLayout';
 import PageHeader from '../../components/layout/PageHeader';
 import FormField from '../../components/ui/FormField';
@@ -14,9 +14,10 @@ const RegisterPage = () => {
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
-    fullName: '',
+    full_name: '',
     email: '',
     password: '',
+    phone: '',
     confirmPassword: '',
   });
   const [errors, setErrors] = useState({});
@@ -44,11 +45,14 @@ const RegisterPage = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.fullName.trim()) newErrors.fullName = 'Full name is required';
+    if (!formData.full_name.trim()) newErrors.full_name = 'Full name is required';
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email is invalid';
+    }
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
     }
     if (!formData.password) {
       newErrors.password = 'Password is required';
@@ -69,18 +73,25 @@ const RegisterPage = () => {
       setLoading(true);
       
       try {
-        const formDataToSend = new FormData();
-        formDataToSend.append('full_name', formData.fullName);
-        formDataToSend.append('email', formData.email);
-        formDataToSend.append('password', formData.password);
-        formDataToSend.append('role', 'customer');
+        const requestBody = {
+          email: formData.email,
+          password: formData.password,
+          full_name: formData.full_name,
+          phone: formData.phone,
+        };
+
+        console.log('Register Request:', requestBody);
 
         const response = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/register`, {
           method: 'POST',
-          body: formDataToSend,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
         });
 
         const data = await response.json();
+        console.log('Register Response:', data);
 
         if (data.success) {
           setNotification({ 
@@ -122,13 +133,13 @@ const RegisterPage = () => {
 
           <PageHeader title="Register" subtitle="Fill out the form correctly" />
           <div className="space-y-4">
-            <FormField label="Full Name" error={errors.fullName}>
+            <FormField label="Full Name" error={errors.full_name}>
               <InputField
                 icon={User}
                 type="text"
-                name="fullName"
+                name="full_name"
                 placeholder="Enter Your Full Name"
-                value={formData.fullName}
+                value={formData.full_name}
                 onChange={handleChange}
               />
             </FormField>
@@ -139,6 +150,16 @@ const RegisterPage = () => {
                 name="email"
                 placeholder="Enter Your Email"
                 value={formData.email}
+                onChange={handleChange}
+              />
+            </FormField>
+            <FormField label="Phone Number" error={errors.phone}>
+              <InputField
+                icon={Phone}
+                type="tel"
+                name="phone"
+                placeholder="Enter Your Phone Number"
+                value={formData.phone}
                 onChange={handleChange}
               />
             </FormField>
@@ -198,13 +219,13 @@ const RegisterPage = () => {
           </div>
 
           <div className="space-y-4 flex-1">
-            <FormField label="Full Name" error={errors.fullName}>
+            <FormField label="Full Name" error={errors.full_name}>
               <InputField
                 icon={User}
                 type="text"
-                name="fullName"
+                name="full_name"
                 placeholder="Enter Your Full Name"
-                value={formData.fullName}
+                value={formData.full_name}
                 onChange={handleChange}
               />
             </FormField>
@@ -215,6 +236,16 @@ const RegisterPage = () => {
                 name="email"
                 placeholder="Enter Your Email"
                 value={formData.email}
+                onChange={handleChange}
+              />
+            </FormField>
+            <FormField label="Phone Number" error={errors.phone}>
+              <InputField
+                icon={Phone}
+                type="tel"
+                name="phone"
+                placeholder="Enter Your Phone Number"
+                value={formData.phone}
                 onChange={handleChange}
               />
             </FormField>
@@ -253,7 +284,7 @@ const RegisterPage = () => {
               <span className="text-gray-600">Have An Account? </span>
               <button
                 onClick={() => navigate('/login')}
-                className="text-orange-500 hover:text-orange-600 font-medium"
+                className="text-#8E6447 hover:text-#7A5538 font-medium"
               >
                 Login
               </button>

@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { FileText, Edit, Trash2 } from 'lucide-react';
 import AdminLayout from '../components/admin/AdminLayout';
 import SearchFilter from '../components/admin/SearchFilter';
 import DataTable from '../components/admin/DataTable';
 import Pagination from '../components/admin/Pagination';
-import ActionButton from '../components/admin/ActionButton';
 import StatusBadge from '../components/admin/StatusBadge';
-import OrderFormModal from '../components/admin/OrderFormModals';
-import OrderDetailSidebar from '../components/admin/OrderDetailSidebar';
-import { getOrders, updateOrderStatus, deleteOrder, createOrder } from '../services/apiService';
+import { getOrders, updateOrderStatus, deleteOrder } from '../services/apiService';
 
 const OrderListPage = () => {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,9 +17,8 @@ const OrderListPage = () => {
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'All');
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingOrderId, setEditingOrderId] = useState(null);
+  const [newStatus, setNewStatus] = useState('');
   const [notification, setNotification] = useState(null);
   const itemsPerPage = 5;
 
@@ -38,10 +35,11 @@ const OrderListPage = () => {
       setLoading(true);
       setError(null);
       const data = await getOrders();
+      console.log('Fetched orders:', data);
       setOrders(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error fetching orders:', err);
-      setError('Failed to load orders from database');
+      setError('Failed to load orders from database. Please check your connection.');
       setOrders([]);
     } finally {
       setLoading(false);
@@ -88,19 +86,30 @@ const OrderListPage = () => {
   const currentOrders = filteredOrders.slice(startIndex, startIndex + itemsPerPage);
 
   const handleViewDetail = (order) => {
-    setSelectedOrder(order);
-    setIsDetailOpen(true);
+    const orderId = order.id || order.order_id || order.orderId;
+    navigate(`/admin/orders/${orderId}`);
   };
 
-  const handleUpdateStatus = async (newStatus) => {
-    if (!selectedOrder) return;
-    
+  const handleEditStatus = (order) => {
+    const orderId = order.id || order.order_id || order.orderId;
+    setEditingOrderId(orderId);
+    setNewStatus(order.status);
+  };
+
+  const handleSaveStatus = async (orderId) => {
     try {
-      const orderId = selectedOrder.id || selectedOrder.order_id || selectedOrder.orderId;
       await updateOrderStatus(orderId, newStatus);
-      setSelectedOrder({ ...selectedOrder, status: newStatus });
+      
+      setOrders(prevOrders => 
+        prevOrders.map(order => 
+          (order.id || order.order_id || order.orderId) === orderId 
+            ? { ...order, status: newStatus } 
+            : order
+        )
+      );
+      
+      setEditingOrderId(null);
       showNotification('Order status updated successfully!', 'success');
-      fetchOrders();
     } catch (error) {
       console.error('Error updating status:', error);
       showNotification(
@@ -110,36 +119,39 @@ const OrderListPage = () => {
     }
   };
 
-  const handleSaveOrder = async (orderData) => {
-    try {
-      await createOrder(orderData);
-      setIsAddModalOpen(false);
-      showNotification('Order created successfully!', 'success');
-      fetchOrders();
-    } catch (error) {
-      console.error('Error creating order:', error);
-      showNotification(
-        error.response?.data?.message || 'Failed to create order',
-        'error'
-      );
-    }
+  const handleCancelEdit = () => {
+    setEditingOrderId(null);
+    setNewStatus('');
   };
 
-  const handleDeleteOrder = async (orderId) => {
-    if (!window.confirm('Are you sure you want to delete this order?')) {
+  const handleDeleteOrder = async (order) => {
+    const orderId = order.id || order.order_id || order.orderId;
+    const orderNumber = order.order_id || order.orderId || order.id;
+    
+    if (!window.confirm(`Are you sure you want to delete Order #${orderNumber}? This action cannot be undone.`)) {
       return;
     }
 
     try {
       await deleteOrder(orderId);
       showNotification('Order deleted successfully!', 'success');
-      fetchOrders();
+      
+      setOrders(prevOrders => 
+        prevOrders.filter(o => 
+          (o.id || o.order_id || o.orderId) !== orderId
+        )
+      );
     } catch (error) {
       console.error('Error deleting order:', error);
-      showNotification(
-        error.response?.data?.message || 'Failed to delete order',
-        'error'
-      );
+      
+      if (error.response?.status === 404) {
+        showNotification('Order not found. It may have been already deleted.', 'error');
+      } else {
+        showNotification(
+          error.response?.data?.message || 'Failed to delete order. Please check backend logs.',
+          'error'
+        );
+      }
     }
   };
 
@@ -170,15 +182,54 @@ const OrderListPage = () => {
             {items.length > 2 && (
               <li className="text-gray-400 text-xs">+{items.length - 2} more</li>
             )}
+            {items.length === 0 && (
+              <li className="text-gray-400 text-xs">No items</li>
+            )}
           </ul>
         );
       }
     },
     {
       header: "Status",
-      render: (order) => (
-        <StatusBadge status={order.status} variant={getStatusVariant(order.status)} />
-      )
+      render: (order) => {
+        const orderId = order.id || order.order_id || order.orderId;
+        const isEditing = editingOrderId === orderId;
+        
+        if (isEditing) {
+          return (
+            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+              <select
+                value={newStatus}
+                onChange={(e) => setNewStatus(e.target.value)}
+                className="px-3 py-1 border border-orange-500 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                autoFocus
+              >
+                <option value="pending">Pending</option>
+                <option value="processing">Processing</option>
+                <option value="On Progress">On Progress</option>
+                <option value="Sending Goods">Sending Goods</option>
+                <option value="completed">Completed</option>
+                <option value="Finish Order">Finish Order</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+              <button
+                onClick={() => handleSaveStatus(orderId)}
+                className="text-green-600 hover:text-green-700 font-medium text-sm"
+              >
+                Save
+              </button>
+              <button
+                onClick={handleCancelEdit}
+                className="text-gray-600 hover:text-gray-700 font-medium text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          );
+        }
+        
+        return <StatusBadge status={order.status} variant={getStatusVariant(order.status)} />;
+      }
     },
     { 
       header: "Total", 
@@ -196,14 +247,14 @@ const OrderListPage = () => {
             <FileText className="w-5 h-5" />
           </button>
           <button 
-            onClick={() => handleViewDetail(order)}
+            onClick={() => handleEditStatus(order)}
             className="text-orange-500 hover:text-orange-600 transition-colors"
-            title="Edit Order"
+            title="Edit Status"
           >
             <Edit className="w-5 h-5" />
           </button>
           <button 
-            onClick={() => handleDeleteOrder(order.id || order.order_id || order.orderId)}
+            onClick={() => handleDeleteOrder(order)}
             className="text-red-500 hover:text-red-600 transition-colors"
             title="Delete Order"
           >
@@ -271,9 +322,11 @@ const OrderListPage = () => {
   return (
     <AdminLayout title="Order List">
       {notification && (
-        <div className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg ${
+        <div className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg transition-all ${
           notification.type === 'success' 
             ? 'bg-green-500 text-white' 
+            : notification.type === 'warning'
+            ? 'bg-yellow-500 text-white'
             : 'bg-red-500 text-white'
         }`}>
           {notification.message}
@@ -291,12 +344,6 @@ const OrderListPage = () => {
       />
 
       <div className="mt-6">
-        <ActionButton onClick={() => setIsAddModalOpen(true)}>
-          + Add Order
-        </ActionButton>
-      </div>
-
-      <div className="mt-6">
         {filteredOrders.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg">
             <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -308,7 +355,7 @@ const OrderListPage = () => {
             <p className="text-gray-400 text-sm">
               {searchTerm 
                 ? 'Try adjusting your search term' 
-                : 'Click "Add Order" to create your first order'}
+                : 'Orders will appear here once customers place them'}
             </p>
           </div>
         ) : (
@@ -331,19 +378,6 @@ const OrderListPage = () => {
           </>
         )}
       </div>
-
-      <OrderDetailSidebar
-        isOpen={isDetailOpen}
-        onClose={() => setIsDetailOpen(false)}
-        order={selectedOrder}
-        onUpdateStatus={handleUpdateStatus}
-      />
-
-      <OrderFormModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onSave={handleSaveOrder}
-      />
     </AdminLayout>
   );
 };

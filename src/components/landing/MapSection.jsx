@@ -5,7 +5,7 @@ const MapSection = () => (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="text-center mb-8 sm:mb-10 lg:mb-12">
         <h2 className="text-3xl sm:text-4xl mb-3 sm:mb-4 px-4">
-          Visit Our Store in the <span className="text-orange-500">Spot on the Map</span> Below
+          Visit Our Store in the <span className="text-#8E6447">Spot on the Map</span> Below
         </h2>
         <p className="text-gray-600 text-sm sm:text-base px-4">
           You can explore the menu that we provide with fun and have their own taste and make your day better

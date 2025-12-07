@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../config/axiosConfig';
 import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 const CartPage = () => {
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ const CartPage = () => {
       }
     } catch (error) {
       console.error('Error updating quantity:', error);
-      alert('Failed to update quantity');
+      toast('Failed to update quantity');
     }
   };
 
@@ -57,7 +58,7 @@ const CartPage = () => {
       }
     } catch (error) {
       console.error('Error removing item:', error);
-      alert('Failed to remove item');
+      toast('Failed to remove item');
     }
   };
 
@@ -69,7 +70,7 @@ const CartPage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-#8E6447 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading cart...</p>
         </div>
       </div>
@@ -83,7 +84,7 @@ const CartPage = () => {
           <p className="text-red-500">{error}</p>
           <button 
             onClick={fetchCart}
-            className="mt-4 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+            className="mt-4 px-4 py-2 bg-#8E6447 text-white rounded-lg hover:bg-#7A5538"
           >
             Retry
           </button>
@@ -101,7 +102,7 @@ const CartPage = () => {
           <p className="text-gray-600 mb-6">Add some products to get started!</p>
           <button
             onClick={() => navigate('/product')}
-            className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+            className="px-6 py-3 bg-#8E6447 text-white rounded-lg hover:bg-#7A5538 transition-colors"
           >
             Browse Products
           </button>
@@ -119,12 +120,11 @@ const CartPage = () => {
           <div className="lg:col-span-2 space-y-4">
             {cartData.items.map((item) => (
               <div key={item.id} className="bg-white rounded-lg shadow p-6">
-                <div className="flex gap-4">
+                <div className="flex gap-4">{console.log(item)}
                   <img
-                    src={item.imageUrl || item.product?.image_url || '/placeholder.png'}
+                    src={item.imageUrl}
                     alt={item.name || item.product?.name}
                     className="w-24 h-24 object-cover rounded-lg"
-                    onError={(e) => e.target.src = '/placeholder.png'}
                   />
                   
                   <div className="flex-1">
@@ -208,7 +208,7 @@ const CartPage = () => {
                 <div className="border-t pt-3">
                   <div className="flex justify-between">
                     <span className="text-lg font-bold">Total</span>
-                    <span className="text-lg font-bold text-orange-500">
+                    <span className="text-lg font-bold text-[#8E6447]">
                       Rp {(cartData.total || cartData.subtotal || 0).toLocaleString()}
                     </span>
                   </div>
@@ -217,7 +217,7 @@ const CartPage = () => {
 
               <button
                 onClick={handleCheckout}
-                className="w-full bg-orange-500 text-white py-3 rounded-lg hover:bg-orange-600 transition-colors font-semibold"
+                className="w-full bg-[#8E6447] text-white py-3 rounded-lg hover:bg-[#7A5538] transition-colors font-semibold"
               >
                 Proceed to Checkout
               </button>

@@ -13,14 +13,14 @@ const TestimonialSection = () => (
           />
         </div>
         <div className="order-2">
-          <div className="text-xs sm:text-sm text-orange-400 mb-2 tracking-wider">TESTIMONIAL</div>
+          <div className="text-xs sm:text-sm text-#C5A053 mb-2 tracking-wider">TESTIMONIAL</div>
           <h2 className="text-3xl sm:text-4xl font-bold mb-4 sm:mb-6">Viezh Robert</h2>
           <p className="text-gray-300 mb-4 sm:mb-6 text-sm sm:text-base">
             "Wow... I am very happy to spend my whole day here. The Wi-fi is good, and the coffee and meals taste so good. I like it here!! Very recommended!"
           </p>
           <div className="flex items-center gap-1 mb-4">
             {[1, 2, 3, 4, 5].map((star) => (
-              <Star key={star} className="w-4 h-4 sm:w-5 sm:h-5 fill-orange-400 text-orange-400" />
+              <Star key={star} className="w-4 h-4 sm:w-5 sm:h-5 fill-#C5A053 text-#C5A053" />
             ))}
             <span className="ml-2 text-base sm:text-lg font-semibold">5.0</span>
           </div>

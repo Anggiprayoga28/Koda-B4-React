@@ -64,7 +64,7 @@ const AdminLayout = ({ children, title }) => {
                 to={item.path}
                 className={`flex items-center gap-3 px-4 py-2 rounded-lg transition ${
                   isActive
-                    ? 'bg-[#FF8906] text-[#0B132A]'
+                    ? 'bg-[#8E6447] text-[#0B132A]'
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >

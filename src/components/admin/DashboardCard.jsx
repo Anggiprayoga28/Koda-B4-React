@@ -6,7 +6,7 @@ const DashboardCard = ({ title, count, change, icon: Icon, color = "green", tren
     green: 'from-green-400 to-green-500',
     indigo: 'from-indigo-400 to-indigo-500',
     purple: 'from-purple-400 to-purple-500',
-    orange: 'from-orange-400 to-orange-500',
+    orange: 'from-[#C5A053] to-[#8E6447]',
     blue: 'from-blue-400 to-blue-500'
   };
 

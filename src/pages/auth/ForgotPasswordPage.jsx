@@ -8,6 +8,7 @@ import PageHeader from '../../components/layout/PageHeader';
 import FormField from '../../components/ui/FormField';
 import InputField from '../../components/ui/InputField';
 import Button from '../../components/ui/Button';
+import { toast } from 'react-toastify';
 
 const ForgotPasswordPage = () => {
   const navigate = useNavigate();
@@ -72,7 +73,7 @@ const ForgotPasswordPage = () => {
           console.log('='.repeat(50));
           console.log('OTP CODE:', response.data.data.otp);
           console.log('='.repeat(50));
-          alert(
+          toast(
             `Development Mode - OTP Code: ${response.data.data.otp}\n\nNote: In production, this will be sent via email only.`
           );
         }
@@ -206,7 +207,7 @@ const ForgotPasswordPage = () => {
                 <button
                   type="button"
                   onClick={() => navigate('/login')}
-                  className="flex items-center gap-2 text-sm text-orange-500 hover:text-orange-600"
+                  className="flex items-center gap-2 text-sm text-#8E6447 hover:text-#7A5538"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   Back to Login
@@ -235,7 +236,7 @@ const ForgotPasswordPage = () => {
                     }
                   }}
                   placeholder="000000"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center tracking-[0.4em] text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center tracking-[0.4em] text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-#8E6447"
                 />
                 <p className="mt-1 text-xs text-gray-500">
                   OTP expires in 5 minutes.
@@ -285,7 +286,7 @@ const ForgotPasswordPage = () => {
                   <button
                     type="button"
                     onClick={handleBackToEmail}
-                    className="flex items-center gap-2 text-orange-500 hover:text-orange-600"
+                    className="flex items-center gap-2 text-#8E6447 hover:text-#7A5538"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     Change Email
@@ -294,7 +295,7 @@ const ForgotPasswordPage = () => {
                     type="button"
                     disabled={loading}
                     onClick={handleEmailSubmit}
-                    className="text-orange-500 hover:text-orange-600"
+                    className="text-#8E6447 hover:text-#7A5538"
                   >
                     Resend OTP
                   </button>
@@ -362,7 +363,7 @@ const ForgotPasswordPage = () => {
                 <button
                   type="button"
                   onClick={() => navigate('/login')}
-                  className="w-full text-center text-orange-500 hover:text-orange-600 text-sm font-medium"
+                  className="w-full text-center text-#8E6447 hover:text-#7A5538 text-sm font-medium"
                 >
                   ← Back to Login
                 </button>
@@ -398,7 +399,7 @@ const ForgotPasswordPage = () => {
                     }
                   }}
                   placeholder="000000"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center tracking-[0.4em] text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center tracking-[0.4em] text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-#8E6447"
                 />
               </FormField>
 
@@ -439,7 +440,7 @@ const ForgotPasswordPage = () => {
                   <button
                     type="button"
                     onClick={handleBackToEmail}
-                    className="text-orange-500 hover:text-orange-600 font-medium"
+                    className="text-#8E6447 hover:text-#7A5538 font-medium"
                   >
                     ← Change Email
                   </button>
@@ -447,7 +448,7 @@ const ForgotPasswordPage = () => {
                     type="button"
                     disabled={loading}
                     onClick={handleEmailSubmit}
-                    className="text-orange-500 hover:text-orange-600 font-medium"
+                    className="text-#8E6447 hover:text-#7A5538 font-medium"
                   >
                     Resend OTP
                   </button>

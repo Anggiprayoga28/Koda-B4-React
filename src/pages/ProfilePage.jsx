@@ -1,107 +1,178 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Camera } from 'lucide-react';
-import axios from 'axios';
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { Eye, EyeOff, Camera } from "lucide-react";
+import { toast } from "react-toastify";
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL;
+import {
+  getProfile,
+  updateProfile,
+  changePassword,
+  clearMessages,
+} from "../redux/slices/authSlice";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const { user, token, isAuthenticated, loading, error, success } = useSelector(
+    (state) => state.auth
+  );
+
+  const hasFetchedProfile = useRef(false);
+  const isFetching = useRef(false);
+  const hasInitialized = useRef(false);
 
   const [profileData, setProfileData] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    address: '',
-    photoUrl: '',
-    createdAt: ''
+    fullName: "",
+    email: "",
+    phone: "",
+    address: "",
+    photoUrl: "",
+    createdAt: "",
   });
 
   const [originalData, setOriginalData] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    address: '',
-    photoUrl: '',
-    createdAt: ''
+    fullName: "",
+    email: "",
+    phone: "",
+    address: "",
+    photoUrl: "",
+    createdAt: "",
   });
 
   const [showPassword, setShowPassword] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [newPassword, setNewPassword] = useState({
-    current: '',
-    new: '',
-    confirm: ''
+    current: "",
+    new: "",
+    confirm: "",
   });
 
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [isPageLoading, setIsPageLoading] = useState(true);
 
   useEffect(() => {
-    document.title = `My Profile - ${profileData.fullName || 'User'} | Coffee Shop`;
+    if (!isAuthenticated && !token && !hasInitialized.current) {
+      toast.error("Please login to access your profile");
+      navigate("/login", { state: { from: "/profile" } });
+      hasInitialized.current = true;
+    }
+  }, [isAuthenticated, token, navigate]);
+
+  useEffect(() => {
+    document.title = `My Profile - ${profileData.fullName || "User"} | Coffee Shop`;
   }, [profileData.fullName]);
 
   useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  const fetchProfile = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('token');
-
-      if (!token) {
-        navigate('/login');
+    const fetchProfileOnce = async () => {
+      if (hasFetchedProfile.current || isFetching.current || !token) {
+        setIsPageLoading(false);
         return;
       }
 
-      const response = await axios.get(`${API_BASE_URL}/profile`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      if (user && user.email) {
+        setIsPageLoading(false);
+        hasFetchedProfile.current = true;
+        return;
+      }
 
-      if (response.data.success) {
-        const data = response.data.data;
-        const profileInfo = {
-          fullName: data.fullName || '',
-          email: data.email || '',
-          phone: data.phone || '',
-          address: data.address || '',
-          photoUrl: data.photoUrl || '',
-          createdAt: data.createdAt || data.created_at || ''
-        };
-        
+      isFetching.current = true;
+      setIsPageLoading(true);
+
+      try {
+        console.log("Fetching profile...");
+        await dispatch(getProfile()).unwrap();
+        hasFetchedProfile.current = true;
+      } catch (error) {
+        console.error("Failed to fetch profile:", error);
+
+        if (error === "UNAUTHORIZED" || error === "No authentication token found") {
+          toast.error("Session expired. Please login again.");
+          navigate("/login");
+        }
+      } finally {
+        setIsPageLoading(false);
+        isFetching.current = false;
+      }
+    };
+
+    fetchProfileOnce();
+
+    return () => {
+      isFetching.current = false;
+    };
+  }, [dispatch, token, user, navigate]);
+
+  useEffect(() => {
+    if (user) {
+      const profileInfo = {
+        fullName: user.fullName || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        address: user.address || "",
+        photoUrl: user.photoUrl || "",
+        createdAt: user.createdAt || user.created_at || "",
+      };
+
+      const isDataChanged =
+        JSON.stringify(profileInfo) !== JSON.stringify(originalData);
+
+      if (isDataChanged) {
+        console.log("Updating local profile data");
         setProfileData(profileInfo);
         setOriginalData(profileInfo);
       }
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-      if (error.response?.status === 401) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('currentUser');
-        navigate('/login');
+
+      if (isPageLoading) {
+        setIsPageLoading(false);
       }
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [user, originalData, isPageLoading]);
+
+  useEffect(() => {
+    if (success) {
+      toast.success(success);
+      dispatch(clearMessages());
+    }
+
+    if (error) {
+      if (error !== "No authentication token found" && !isPageLoading) {
+        toast.error(error);
+      }
+      dispatch(clearMessages());
+    }
+  }, [success, error, dispatch, isPageLoading]);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   const handlePhotoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert('File size must be less than 5MB');
+        toast.error("File size must be less than 5MB");
         return;
       }
-      
-      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+
+      const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif"];
       if (!validTypes.includes(file.type)) {
-        alert('Please upload a valid image file (JPEG, PNG, or GIF)');
+        toast.error("Please upload a valid image file (JPEG, PNG, or GIF)");
         return;
       }
-      
+
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+
       setSelectedFile(file);
       setPreviewUrl(URL.createObjectURL(file));
     }
@@ -115,121 +186,115 @@ const ProfilePage = () => {
     setProfileData(originalData);
     setIsEditing(false);
     setSelectedFile(null);
-    setPreviewUrl(null);
+
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!profileData.fullName.trim()) {
-      alert('Full name is required');
+      toast.error("Full name is required");
+      return;
+    }
+
+    const hasChanges =
+      profileData.fullName !== originalData.fullName ||
+      profileData.phone !== originalData.phone ||
+      profileData.address !== originalData.address ||
+      selectedFile !== null;
+
+    if (!hasChanges) {
+      toast.info("No changes to save");
+      setIsEditing(false);
       return;
     }
 
     try {
-      setSaving(true);
-      const token = localStorage.getItem('token');
+      console.log(profileData);
+      console.log(selectedFile);
+      await dispatch(
+        updateProfile({
+          fullName: profileData.fullName,
+          phone: profileData.phone,
+          address: profileData.address,
+          photo: selectedFile,
+        })
+      ).unwrap();
 
-      const formData = new FormData();
-      formData.append('full_name', profileData.fullName);
-      formData.append('phone', profileData.phone);
-      formData.append('address', profileData.address);
+      setIsEditing(false);
+      setSelectedFile(null);
 
-      if (selectedFile) {
-        formData.append('photo', selectedFile);
-      }
-
-      const response = await axios.patch(`${API_BASE_URL}/profile`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-
-      if (response.data.success) {
-        alert('Profile updated successfully!');
-        
-        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        currentUser.fullName = profileData.fullName;
-        currentUser.phone = profileData.phone;
-        currentUser.address = profileData.address;
-
-        if (response.data.data?.photoUrl) {
-          currentUser.photoUrl = response.data.data.photoUrl;
-        }
-
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-        
-        await fetchProfile();
-        
-        setIsEditing(false);
-        setSelectedFile(null);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
         setPreviewUrl(null);
       }
+
+      hasFetchedProfile.current = false;
     } catch (error) {
-      console.error('Error updating profile:', error);
-      alert(error.response?.data?.message || 'Failed to update profile. Please try again.');
-    } finally {
-      setSaving(false);
+      console.error("Profile update error:", error);
     }
   };
 
   const handlePasswordChange = async () => {
     if (!newPassword.current || !newPassword.new || !newPassword.confirm) {
-      alert('Please fill in all password fields');
+      toast.error("Please fill in all password fields");
       return;
     }
 
     if (newPassword.new.length < 6) {
-      alert('New password must be at least 6 characters long');
+      toast.error("New password must be at least 6 characters long");
       return;
     }
 
     if (newPassword.new !== newPassword.confirm) {
-      alert('New passwords do not match');
+      toast.error("New passwords do not match");
       return;
     }
 
     try {
-      const token = localStorage.getItem('token');
-      
-      const response = await axios.post(
-        `${API_BASE_URL}/profile/change-password`,
-        {
-          current_password: newPassword.current,
-          new_password: newPassword.new
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      setChangingPassword(true);
 
-      if (response.data.success) {
-        alert('Password changed successfully!');
-        setShowPasswordModal(false);
-        setNewPassword({ current: '', new: '', confirm: '' });
-      }
+      await dispatch(
+        changePassword({
+          currentPassword: newPassword.current,
+          newPassword: newPassword.new,
+          confirmPassword: newPassword.confirm,
+        })
+      ).unwrap();
+
+      setShowPasswordModal(false);
+      setNewPassword({ current: "", new: "", confirm: "" });
+      toast.success("Password changed successfully!");
     } catch (error) {
-      console.error('Error changing password:', error);
-      alert(error.response?.data?.message || 'Failed to change password. Please check your current password.');
+      console.error("Password change error:", error);
+    } finally {
+      setChangingPassword(false);
     }
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    if (Number.isNaN(date.getTime())) return 'N/A';
-    return date.toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      if (Number.isNaN(date.getTime())) return "N/A";
+      return date.toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+    } catch (error) {
+      return "N/A";
+    }
   };
 
-  if (loading) {
+  if (loading && !user) {
     return (
       <div className="min-h-screen bg-white md:bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8E6447]" />
       </div>
     );
   }
@@ -237,13 +302,19 @@ const ProfilePage = () => {
   return (
     <div className="min-h-screen bg-white md:bg-gray-50 py-6 md:py-12">
       <div className="max-w-6xl mx-auto px-4 md:px-8">
-        <h1 className="text-3xl md:text-5xl font-light mb-6 md:mb-12">Profile</h1>
+        <h1 className="text-3xl md:text-5xl font-light mb-6 md:mb-12">
+          Profile
+        </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm p-6 text-center">
-              <h2 className="text-xl md:text-2xl font-semibold mb-2">{profileData.fullName}</h2>
-              <p className="text-gray-600 mb-6 text-sm md:text-base">{profileData.email}</p>
+              <h2 className="text-xl md:text-2xl font-semibold mb-2">
+                {profileData.fullName || "User"}
+              </h2>
+              <p className="text-gray-600 mb-6 text-sm md:text-base">
+                {profileData.email}
+              </p>
 
               <div className="relative inline-block mb-6">
                 <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden bg-gray-200 mx-auto">
@@ -253,7 +324,7 @@ const ProfilePage = () => {
                       alt="Profile"
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        e.target.src = '/Profile.svg';
+                        e.target.src = "/Profile.svg";
                       }}
                     />
                   ) : (
@@ -266,9 +337,9 @@ const ProfilePage = () => {
                     </div>
                   )}
                 </div>
-                
+
                 {isEditing && (
-                  <label className="absolute bottom-0 right-0 bg-[#FF8906] text-white p-2 rounded-full cursor-pointer hover:bg-orange-600 transition">
+                  <label className="absolute bottom-0 right-0 bg-[#8E6447] text-white p-2 rounded-full cursor-pointer hover:bg-[#7A5538] transition">
                     <Camera className="w-5 h-5" />
                     <input
                       type="file"
@@ -283,8 +354,10 @@ const ProfilePage = () => {
               {isEditing && (
                 <button
                   type="button"
-                  onClick={() => document.querySelector('input[type="file"]')?.click()}
-                  className="w-full bg-[#FF8906] text-black py-3 rounded-lg hover:bg-orange-600 transition mb-4 font-medium"
+                  onClick={() =>
+                    document.querySelector('input[type="file"]')?.click()
+                  }
+                  className="w-full bg-[#8E6447] text-black py-3 rounded-lg hover:bg-[#7A5538] transition mb-4 font-medium"
                 >
                   Upload New Photo
                 </button>
@@ -308,13 +381,16 @@ const ProfilePage = () => {
                       type="text"
                       value={profileData.fullName}
                       onChange={(e) =>
-                        setProfileData({ ...profileData, fullName: e.target.value })
+                        setProfileData({
+                          ...profileData,
+                          fullName: e.target.value,
+                        })
                       }
                       disabled={!isEditing}
                       className={`w-full px-4 py-3 border rounded-lg pl-10 text-sm md:text-base ${
-                        isEditing 
-                          ? 'border-gray-300 bg-white text-gray-900' 
-                          : 'border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed'
+                        isEditing
+                          ? "border-gray-300 bg-white text-gray-900"
+                          : "border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed"
                       }`}
                       placeholder="Enter your full name"
                     />
@@ -343,7 +419,9 @@ const ProfilePage = () => {
                       alt="Email icon"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Email cannot be changed
+                  </p>
                 </div>
 
                 <div>
@@ -355,13 +433,16 @@ const ProfilePage = () => {
                       type="tel"
                       value={profileData.phone}
                       onChange={(e) =>
-                        setProfileData({ ...profileData, phone: e.target.value })
+                        setProfileData({
+                          ...profileData,
+                          phone: e.target.value,
+                        })
                       }
                       disabled={!isEditing}
                       className={`w-full px-4 py-3 border rounded-lg pl-10 text-sm md:text-base ${
-                        isEditing 
-                          ? 'border-gray-300 bg-white text-gray-900' 
-                          : 'border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed'
+                        isEditing
+                          ? "border-gray-300 bg-white text-gray-900"
+                          : "border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed"
                       }`}
                       placeholder="Enter your phone number"
                     />
@@ -381,14 +462,14 @@ const ProfilePage = () => {
                     <button
                       type="button"
                       onClick={() => setShowPasswordModal(true)}
-                      className="text-orange-500 text-sm md:text-base hover:underline font-medium"
+                      className="text-[#8E6447] text-sm md:text-base hover:underline font-medium"
                     >
                       Change Password
                     </button>
                   </div>
                   <div className="relative">
                     <input
-                      type={showPassword ? 'text' : 'password'}
+                      type={showPassword ? "text" : "password"}
                       value="**********"
                       disabled
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg pl-10 pr-10 bg-gray-50 text-gray-600 cursor-not-allowed text-sm md:text-base"
@@ -420,14 +501,17 @@ const ProfilePage = () => {
                     <textarea
                       value={profileData.address}
                       onChange={(e) =>
-                        setProfileData({ ...profileData, address: e.target.value })
+                        setProfileData({
+                          ...profileData,
+                          address: e.target.value,
+                        })
                       }
                       disabled={!isEditing}
                       rows="3"
                       className={`w-full px-4 py-3 border rounded-lg pl-10 text-sm md:text-base resize-none ${
-                        isEditing 
-                          ? 'border-gray-300 bg-white text-gray-900' 
-                          : 'border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed'
+                        isEditing
+                          ? "border-gray-300 bg-white text-gray-900"
+                          : "border-gray-300 bg-gray-50 text-gray-600 cursor-not-allowed"
                       }`}
                       placeholder="Enter your address"
                     />
@@ -446,15 +530,15 @@ const ProfilePage = () => {
                     <button
                       type="button"
                       onClick={handleSubmit}
-                      disabled={saving}
-                      className="flex-1 bg-[#FF8906] text-black py-3 rounded-lg font-semibold hover:bg-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={loading}
+                      className="flex-1 bg-[#8E6447] text-black py-3 rounded-lg font-semibold hover:bg-[#7A5538] transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {saving ? 'Saving...' : 'Save Changes'}
+                      {loading ? "Saving..." : "Save Changes"}
                     </button>
                     <button
                       type="button"
                       onClick={handleCancelEdit}
-                      disabled={saving}
+                      disabled={loading}
                       className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition disabled:opacity-50"
                     >
                       Cancel
@@ -464,7 +548,7 @@ const ProfilePage = () => {
                   <button
                     type="button"
                     onClick={handleEditClick}
-                    className="w-full bg-[#FF8906] text-black py-3 rounded-lg hover:bg-orange-600 transition font-semibold"
+                    className="w-full bg-[#8E6447] text-black py-3 rounded-lg hover:bg-[#7A5538] transition font-semibold"
                   >
                     Edit Profile
                   </button>
@@ -533,17 +617,19 @@ const ProfilePage = () => {
               <button
                 type="button"
                 onClick={handlePasswordChange}
-                className="flex-1 bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition"
+                disabled={changingPassword}
+                className="flex-1 bg-[#8E6447] text-white py-3 rounded-lg font-semibold hover:bg-[#7A5538] transition disabled:opacity-50"
               >
-                Change Password
+                {changingPassword ? "Changing..." : "Change Password"}
               </button>
               <button
                 type="button"
                 onClick={() => {
                   setShowPasswordModal(false);
-                  setNewPassword({ current: '', new: '', confirm: '' });
+                  setNewPassword({ current: "", new: "", confirm: "" });
                 }}
-                className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition"
+                disabled={changingPassword}
+                className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition disabled:opacity-50"
               >
                 Cancel
               </button>

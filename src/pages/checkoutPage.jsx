@@ -140,7 +140,7 @@ const CheckoutPage = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8E6447] mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your cart...</p>
         </div>
       </div>
@@ -182,7 +182,7 @@ const CheckoutPage = () => {
                       value={formData.fullName} 
                       onChange={handleChange} 
                       required 
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent" 
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8E6447] focus:border-transparent" 
                       placeholder="John Doe" 
                     />
                   </div>
@@ -195,7 +195,7 @@ const CheckoutPage = () => {
                       value={formData.email} 
                       onChange={handleChange} 
                       required 
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent" 
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8E6447] focus:border-transparent" 
                       placeholder="john@example.com" 
                     />
                   </div>
@@ -207,7 +207,7 @@ const CheckoutPage = () => {
                       name="phone" 
                       value={formData.phone} 
                       onChange={handleChange} 
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent" 
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8E6447] focus:border-transparent" 
                       placeholder="08123456789" 
                     />
                   </div>
@@ -220,7 +220,7 @@ const CheckoutPage = () => {
                       onChange={handleChange} 
                       required 
                       rows="3" 
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent" 
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8E6447] focus:border-transparent" 
                       placeholder="Enter your complete address" 
                     />
                   </div>
@@ -237,7 +237,7 @@ const CheckoutPage = () => {
                   name="deliveryMethod" 
                   value={formData.deliveryMethod} 
                   onChange={handleChange} 
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8E6447] focus:border-transparent"
                 >
                   <option value="dine_in">Dine In - Free</option>
                   <option value="door_delivery">Door Delivery - Rp 10,000</option>
@@ -255,7 +255,7 @@ const CheckoutPage = () => {
                   name="paymentMethodId" 
                   value={formData.paymentMethodId} 
                   onChange={(e) => setFormData({...formData, paymentMethodId: parseInt(e.target.value)})} 
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8E6447] focus:border-transparent"
                 >
                   <option value="1">Cash</option>
                   <option value="2">Credit Card</option>
@@ -272,7 +272,7 @@ const CheckoutPage = () => {
               <button 
                 type="submit" 
                 disabled={submitting} 
-                className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
+                className="w-full bg-[#8E6447] text-white py-3 rounded-lg font-semibold hover:bg-[#7A5538] disabled:bg-gray-300 disabled:cursor-not-allowed transition"
               >
                 {submitting ? 'Processing...' : `Place Order - Rp ${total.toLocaleString()}`}
               </button>
@@ -299,7 +299,7 @@ const CheckoutPage = () => {
                         {item.temperature && `${item.temperature} • `}
                         Qty: {item.quantity}
                       </p>
-                      <p className="text-sm font-semibold text-orange-600">
+                      <p className="text-sm font-semibold text-#7A5538">
                         Rp {(item.subtotal || item.totalPrice || 0).toLocaleString()}
                       </p>
                     </div>
@@ -319,7 +319,7 @@ const CheckoutPage = () => {
                 <div className="border-t border-gray-200 pt-2 mt-2">
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total</span>
-                    <span className="text-orange-600">Rp {total.toLocaleString()}</span>
+                    <span className="text-#7A5538">Rp {total.toLocaleString()}</span>
                   </div>
                 </div>
               </div>

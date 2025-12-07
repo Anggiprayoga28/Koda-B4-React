@@ -42,8 +42,8 @@ const MenuCard = ({ title, originalPrice, price, description, image, isFlashSale
             <button className="w-full bg-[#6B727C] hover:bg-gray-500 text-white font-medium px-3 sm:px-4 py-2 rounded-md transition-colors text-sm sm:text-base">
               Buy
             </button>
-            <button className="border border-[#FF8906] p-2 rounded-md hover:bg-[#FFF3E0] transition-colors">
-              <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF8906]" />
+            <button className="border border-[#8E6447] p-2 rounded-md hover:bg-[#F9F6F0] transition-colors">
+              <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-[#8E6447]" />
             </button>
           </div>
         </div>

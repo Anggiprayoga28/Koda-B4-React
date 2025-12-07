@@ -17,7 +17,7 @@ const ProfileCard = ({ profileData, onPhotoUpload, formatDate }) => {
             </div>
           )}
         </div>
-        <label className="absolute bottom-0 right-0 bg-orange-500 text-white p-2 rounded-full cursor-pointer hover:bg-orange-600 transition">
+        <label className="absolute bottom-0 right-0 bg-#8E6447 text-white p-2 rounded-full cursor-pointer hover:bg-#7A5538 transition">
           <Camera className="w-5 h-5" />
           <input 
             type="file" 
@@ -30,7 +30,7 @@ const ProfileCard = ({ profileData, onPhotoUpload, formatDate }) => {
 
       <button 
         onClick={() => document.querySelector('input[type="file"]').click()}
-        className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition mb-4"
+        className="w-full bg-#8E6447 text-white py-3 rounded-lg font-semibold hover:bg-#7A5538 transition mb-4"
       >
         Upload New Photo
       </button>

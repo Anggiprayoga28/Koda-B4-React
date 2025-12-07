@@ -9,7 +9,7 @@ import { Plus } from 'lucide-react';
  */
 const ActionButton = ({ onClick, icon: Icon = Plus, children, variant = "primary" }) => {
   const variants = {
-    primary: "bg-[#FF8906] text-[#0B132A] hover:bg-orange-600",
+    primary: "bg-[#8E6447] text-[#0B132A] hover:bg-#7A5538",
     secondary: "bg-gray-200 text-gray-700 hover:bg-gray-300",
     danger: "bg-red-500 text-white hover:bg-red-600"
   };
